@@ -1,3 +1,5 @@
+<img src="assets/zoomer.webp" alt="Skills project logo" width="160">
+
 # Skills
 
 A collection of agents skills to make more delightful software.

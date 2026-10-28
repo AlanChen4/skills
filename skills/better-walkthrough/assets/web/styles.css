@@ -29,7 +29,7 @@
   #diagram-panel { height: 100%; cursor: grab; touch-action: none; }
   #diagram-panel.dragging { cursor: grabbing; user-select: none; }
   #diagram-status:empty { display: none; }
-  #diagram > svg { display: block; max-width: none; }
+  #diagram > svg { display: block; max-width: none; will-change: transform; transform: translateZ(0); }
   #zoom-controls { position: absolute; right: 20px; bottom: 20px; display: flex; gap: 4px; }
   #step { overflow-wrap: anywhere; --code-background: #f2f2f2; --code-border: #d8d8d8; }
   #step pre { white-space: pre-wrap; }

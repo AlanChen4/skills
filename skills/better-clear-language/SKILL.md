@@ -1,7 +1,7 @@
 ---
 name: better-clear-language
 license: MIT
-description: Write and revise clear English for policies, instructions, knowledge bases, user messages, reports, and spoken delivery. Use when a user asks for clear language, ASD-STE100 style, plain English, concise prose, or text that follows the Lumos clear-language rules.
+description: Write in clear, simple (ASD-STE100 style) english.
 ---
 
 # Better Clear Language

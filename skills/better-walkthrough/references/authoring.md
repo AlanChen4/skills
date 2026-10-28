@@ -17,6 +17,7 @@ State unknowns, such as third-party behavior absent from the source. Do not impl
 - Avoid decorative dot separators (such as · and •) and em dashes in normal text. Native list markers and punctuation within exact names, code, and quoted data are allowed.
 - Explain business rules and application behavior. Focus each step on what happens now.
 - Omit introductory filler, navigation prompts, previews of later steps, and commentary about the visualization or use of fictional examples.
+- Make each choice focus on one condition or event (e.g. “Payment declined”). State shared context once in the step, and keep necessary inputs in example data. Do not combine setup, action, and outcome in one option; explain the result after selection.
 - At decision outcomes, list the specific reasons. Connect actual inputs to conditions and thresholds (e.g. 3 units requested exceeds 1 available).
 - Distinguish deterministic rules, AI judgments, and human decisions. Explain human overrides with their stated reasons.
 - Use realistic fictional examples in the expected formats (e.g. version 4 UUIDs and Base64 signatures). Keep names and identifiers consistent across steps.

@@ -41,7 +41,9 @@ A step has either `next` or `choices`. Omit both for an end state. Choices have 
 
 For conditional navigation, `next` can be an array of transitions with `when: state => condition`. The first matching transition wins. Put an unconditional fallback last. Keep every target explicit so validation can inspect it without executing business logic.
 
-Examples support `data` for JSON, `facts` for labeled values, `text`, and `paragraphs`. Add `disclosure` to put content inside a native expandable section. The interface supplies gray containers.
+Keep `explanation` brief. Put supporting points in `reasons`, which the interface renders as a bullet list, rather than joining them into a long paragraph.
+
+Examples support `data` for JSON, `facts` for labeled values, `text`, and `paragraphs`. Prefer `facts` for separate values and keep text short. Add `disclosure` to put content inside a native expandable section. The interface supplies gray containers.
 
 Use a unique example `id`. Saved progress uses that ID unless `storageKey` is supplied. Change the storage key when state changes are incompatible. Keep existing keys when moving files to preserve progress.
 

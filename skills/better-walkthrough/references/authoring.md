@@ -12,8 +12,10 @@ Store repository-relative source paths with the walkthrough. Step-level source r
 
 ## Explain
 
-- Do not number list items or diagram steps.
-- Use clear language. Keep reusable guidance and its examples independent of a specific product.
+- Prefer short bullet points over long paragraphs. Use numbered lists when order matters. Keep diagram labels brief without adding step numbers.
+- Write in ASD-STE100 style: use common, precise words, active voice, and one action or fact per sentence. Use the same term for the same thing, and preserve technical names and exact business conditions.
+- Avoid decorative dot separators (such as · and •) and em dashes in normal text. Native list markers and punctuation within exact names, code, and quoted data are allowed.
+- Keep reusable guidance and its examples independent of a specific product.
 - Explain business rules and application behavior. Focus each step on what happens now.
 - Omit introductory filler, navigation prompts, previews of later steps, and commentary about the visualization or use of fictional examples.
 - At decision outcomes, list the specific reasons. Connect actual inputs to conditions and thresholds (e.g. 3 units requested exceeds 1 available).

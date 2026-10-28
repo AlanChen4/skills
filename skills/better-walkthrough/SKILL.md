@@ -16,12 +16,12 @@ Read [authoring.md](references/authoring.md) to trace the implementation and exp
 
 Follow [workspaces.md](references/workspaces.md) to create a local `.better-walkthrough/` folder with a self-ignoring `.gitignore`. Keep product code and tracked configuration unchanged.
 
-Use [content-format.md](references/content-format.md) to write content.js and diagram.d2. Reuse the bundled interface and the authoring guide's diagram and interaction rules.
+Use [content-format.md](references/content-format.md) to write content.js and diagram.d2. Reuse the bundled interface.
 
 ## Validate
 
-Follow [runtime.md](references/runtime.md) to run `--check` for compilation, reference validation, and viewer HTTP checks. Serving runs the same checks, so use one path without repeating validation. Resolve reported errors. Structural checks do not certify business accuracy; ground the explanation in the implementation.
+Follow [runtime.md](references/runtime.md) to check or serve the walkthrough. Resolve reported errors.
 
 ## Deliver
 
-Start the viewer using the runtime guide. Return the local URL and artifact directory, with validation results and material uncertainties. Preserve progress when updating an existing walkthrough.
+Return the viewer URL and artifact directory, with validation results and material uncertainties.

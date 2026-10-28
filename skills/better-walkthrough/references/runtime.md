@@ -10,22 +10,13 @@ Create a [local walkthrough folder](workspaces.md) and write its [content and di
 python3 <skill-directory>/scripts/cli.py --walkthrough <walkthrough-directory> --check
 ```
 
-This single command checks dependencies, compiles D2, validates content and connections, and checks the viewer's HTTP routes using a temporary local server. The temporary server stops before the command exits. Do not repeat validation with the internal JavaScript validator or separate HTTP requests.
+This command checks dependencies, compiles D2, validates navigation and diagram references, checks person-shape proportions, and checks viewer HTTP routes. Its temporary local server stops before the command exits.
 
-Add `--json` for a machine-readable report with the workflow ID, step and connection counts, checked route count, artifact directory, and content and diagram routes. Success exits with 0; check failures exit with 1; invalid arguments exit with 2. Diagnostics go to stderr. Use `--help` for examples.
+Add `--json` for a machine-readable report (check only). Use `--help` for examples and exit codes.
 
-The folder must contain content.js and diagram.d2. Compilation writes diagram.svg beside them. Validation checks:
+Compilation writes diagram.svg beside content.js and diagram.d2. The proportion check covers standard D2 person shapes, not arbitrary icons.
 
-- Missing or duplicate step IDs and an unknown start step.
-- Missing transition targets and unreachable steps.
-- Missing choice IDs or labels and duplicate choice IDs within a step.
-- Steps that define both Next navigation and choices.
-- Missing diagram nodes or connections and duplicate connection references.
-- Missing or ambiguous named connections, including endpoints within groups.
-- D2 person outlines stretched more than 20% from their natural width-to-height ratio, including their node IDs. This check recognizes the standard D2 person path; it does not inspect arbitrary icons or other shape types.
-- Viewer HTML, configuration, shared JavaScript and CSS, content, SVG, and reload routes return the expected data.
-
-Resolve reported errors before serving. These checks validate structure and HTTP delivery; they do not certify business accuracy, browser execution, or the absence of visual collisions. Check explanations against the implementation during authoring. Use automatic layout; browser review is not required. Do not add AST analysis or business execution adapters by default.
+These checks do not certify business accuracy, browser execution, or the absence of visual collisions. Browser review is not required.
 
 ## Diagnose dependencies
 
@@ -43,7 +34,7 @@ If a dependency is missing, print setup instructions:
 python3 <skill-directory>/scripts/cli.py --setup
 ```
 
-This command prints installation guidance from the official Python, Node.js, and D2 sites. It does not install software. D2 0.9.0 bundles TALA; no separate layout-engine installation is needed.
+This prints installation guidance without installing software.
 
 ## Serve
 
@@ -55,6 +46,4 @@ Serving performs the same validation and HTTP checks before printing the viewer 
 
 For an initialized walkthrough, replace `--walkthrough <walkthrough-directory>` with `--repo <checkout> --name <workflow>`. Existing folders outside the checkout remain accessible through `--walkthrough`.
 
-The server serves the bundled interface and files within the selected walkthrough folder. It recompiles changed D2 source and reloads changes to the web files and content. The shared interface preserves progress across refreshes. Its behavior is defined in [the authoring guidance](authoring.md#use-the-shared-interface).
-
-Keep source repositories and unrelated walkthroughs outside the serving routes. Run the interface from the installed skill rather than copying it into the product repository. The runtime does not upload files or start a public deployment.
+The server reloads changed source and content. The bundled interface provides manual navigation, branching, exploration tracking, stable diagram positions, pan and zoom, and saved progress.

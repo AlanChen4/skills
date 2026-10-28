@@ -1,13 +1,6 @@
 # Content format
 
-Each walkthrough supplies content.js, diagram.d2, and generated diagram.svg. The web interface handles rendering and navigation. Content modules export trusted local JavaScript; they must not execute product code or call external services.
-
-Start diagram.d2 with the fixed layout below so standalone D2 exports match the CLI:
-
-```d2
-direction: down
-vars: {d2-config: {layout-engine: tala}}
-```
+Each walkthrough supplies content.js, diagram.d2, and generated diagram.svg. The web interface handles rendering and navigation. Content modules export trusted local JavaScript; they must not execute product code or call external services. Keep credentials out of scenario data.
 
 Export an object from `content.js`:
 
@@ -46,7 +39,7 @@ export default {
 
 If D2 has several connections between the same endpoints, add `occurrence: 0` (or 1, 2, and so on) to select their order in the D2 source. Ambiguous or missing connections fail with an actionable error.
 
-Existing `edges` arrays of decoded D2 connection IDs and numeric transition references remain supported. Preserve their order and existing storage keys when updating a walkthrough, so saved progress remains valid. Named definitions may also use literal connection IDs for unusual D2 syntax.
+Existing `edges` arrays of decoded D2 connection IDs and numeric transition references remain supported. Named definitions may also use literal connection IDs for unusual D2 syntax.
 
 A step has either `next` or `choices`. Omit both for an end state. Choices have stable `id`, `label`, `summary`, `alternative`, `to`, and optional `edge`, `examples`, and `updates` fields. `alternative` completes “See what would've happened if…” at the end of a path.
 
@@ -58,7 +51,7 @@ Keep `explanation` brief. Put supporting points in `reasons`, which the interfac
 
 Examples support `data` for JSON, `facts` for labeled values, `text`, and `paragraphs`. Prefer `facts` for separate values and keep text short. Add `disclosure` to put content inside a native expandable section. The interface supplies gray containers.
 
-Use a unique example `id`. Saved progress uses that ID unless `storageKey` is supplied. Change the storage key when state changes are incompatible. Keep existing keys when moving files to preserve progress.
+Use a unique walkthrough `id`. Saved progress uses that ID unless `storageKey` is supplied. Keep IDs, storage keys, and connection order unchanged when moving files to preserve progress at the same viewer origin. Change the storage key when state changes are incompatible.
 
 ## Source references
 

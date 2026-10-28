@@ -4,6 +4,7 @@ export function attachViewport(panel, svg, controls, initialZoom = 1, onChange =
   let zoom = 1;
   let targetZoom = 1;
   let frame;
+  let dragFrame;
   let drag;
   const {out, reset, into} = controls;
   function stopZoom() {
@@ -50,6 +51,12 @@ export function attachViewport(panel, svg, controls, initialZoom = 1, onChange =
   out.onclick = () => setZoom(targetZoom / 1.25);
   into.onclick = () => setZoom(targetZoom * 1.25);
   reset.onclick = () => setZoom(1);
+  function drawDrag() {
+    dragFrame = undefined;
+    if (!drag) return;
+    panel.scrollLeft = drag.left - (drag.pointerX - drag.x);
+    panel.scrollTop = drag.top - (drag.pointerY - drag.y);
+  }
   panel.addEventListener('pointerdown', event => {
     if (event.button !== 0 || event.isPrimary === false || event.target.closest('a, button, input, select, textarea')) return;
     stopZoom();
@@ -60,11 +67,16 @@ export function attachViewport(panel, svg, controls, initialZoom = 1, onChange =
   });
   panel.addEventListener('pointermove', event => {
     if (!drag || drag.id !== event.pointerId) return;
-    panel.scrollLeft = drag.left - (event.clientX - drag.x);
-    panel.scrollTop = drag.top - (event.clientY - drag.y);
+    drag.pointerX = event.clientX;
+    drag.pointerY = event.clientY;
+    if (dragFrame === undefined) dragFrame = requestAnimationFrame(drawDrag);
   });
   const finish = event => {
     if (!drag || drag.id !== event.pointerId) return;
+    if (dragFrame !== undefined) {
+      cancelAnimationFrame(dragFrame);
+      drawDrag();
+    }
     drag = null;
     panel.classList.remove('dragging');
     if (panel.hasPointerCapture(event.pointerId)) panel.releasePointerCapture(event.pointerId);

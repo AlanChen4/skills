@@ -50,13 +50,15 @@ function renderExamples(parent, examples = []) {
     if (example.text) paragraph(target, example.text);
     for (const text of example.paragraphs || []) paragraph(target, text);
     if (example.facts) {
-      const list = document.createElement('dl');
+      const table = document.createElement('table'); table.className = 'example-facts';
+      const body = document.createElement('tbody');
       for (const [label, value] of Object.entries(example.facts)) {
-        const term = document.createElement('dt'); inline(term, label);
-        const detail = document.createElement('dd'); inline(detail, String(value));
-        list.append(term, detail);
+        const row = document.createElement('tr');
+        const term = document.createElement('th'); term.scope = 'row'; inline(term, label);
+        const detail = document.createElement('td'); inline(detail, String(value));
+        row.append(term, detail); body.append(row);
       }
-      target.append(list);
+      table.append(body); target.append(table);
     }
     if (Object.hasOwn(example, 'data')) {
       const pre = document.createElement('pre'); pre.textContent = JSON.stringify(example.data, null, 2); target.append(pre);

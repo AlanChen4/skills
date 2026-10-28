@@ -51,3 +51,6 @@
   #data > :first-child, .example-data > :first-child { margin-top: 0; }
   #data > :last-child, .example-data > :last-child { margin-bottom: 0; }
   .example-label { display: block; color: #666; margin-bottom: 6px; }
+  .example-facts { width: 100%; table-layout: fixed; border-collapse: collapse; }
+  .example-facts th, .example-facts td { text-align: left; vertical-align: top; padding: 4px; }
+  .example-facts th { width: 40%; }

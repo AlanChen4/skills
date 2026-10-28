@@ -51,7 +51,7 @@ Keep `explanation` brief. Put supporting points in `reasons`, which the interfac
 
 Wrap code references in backticks (e.g. `check_stock`) for inline code styling in narrative text. Other Markdown and HTML are rendered as plain text.
 
-Examples support `data` for JSON, `facts` for labeled values, `text`, and `paragraphs`. Prefer `facts` for separate values and keep text short. Add `disclosure` to put content inside a native expandable section. The interface supplies gray containers.
+Examples support `data` for JSON, `facts` for a two-column field/value table, `text`, and `paragraphs`. Use `facts` for flat values (e.g. `facts: {Target: 'r/catmakers', Schedule: '0 8 * * *'}`) and `data` for nested payloads or responses. Keep text short. Add `disclosure` to put content inside a native expandable section. The interface supplies gray containers.
 
 Use a unique walkthrough `id`. Saved progress uses that ID unless `storageKey` is supplied. Keep IDs, storage keys, and connection order unchanged when moving files to preserve progress at the same viewer origin. Change the storage key when state changes are incompatible.
 

@@ -70,8 +70,10 @@ function renderChoices(step, snapshot) {
   const tried = triedChoices.get(step.id) || new Set();
   const colors = choiceColors(step.choices);
   decisions.set(step.id, {history: history.slice(), options: step.choices.map(choice => choice.id)});
-  const fieldset = document.createElement('fieldset');
-  const legend = document.createElement('legend'); legend.textContent = step.legend || 'Choices'; fieldset.append(legend);
+  const fieldset = document.createElement('fieldset'); fieldset.className = 'panel';
+  const heading = document.createElement('p'); heading.id = 'choices-title'; heading.className = 'panel-label';
+  heading.textContent = step.legend || 'What to explore next?'; fieldset.append(heading);
+  fieldset.setAttribute('aria-labelledby', heading.id);
   for (const choice of step.choices) {
     const section = document.createElement('div');
     const data = document.createElement('div'); data.className = 'example-data';

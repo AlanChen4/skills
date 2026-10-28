@@ -36,6 +36,8 @@ Store repository-relative source paths with the walkthrough. Step-level source r
 
 Keep native HTML controls and the existing interface structure. The bordered text column stays on the left, with the diagram on the right and independent scrolling. Example data belongs in light gray containers. Omit redundant diagram headings and captions.
 
+Support click-and-drag panning and native zoom buttons in the diagram's bottom-right corner. Preserve the view between steps and save zoom and scroll position across refreshes.
+
 Use manual Back and Next navigation and concrete choices. Previously selected choices remain available at lower opacity. Show unexplored alternatives only at the end of a path, when there is no Next action or pending choice. Use one “See what would've happened if…” introduction followed by bulleted scenario links.
 
 Exploration counts unique choices selected across all decision steps, including steps not yet reached. At 100%, the progress text turns green and Restart appears above Next. Preserve progress across refreshes and reload source changes during development.

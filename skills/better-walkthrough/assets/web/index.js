@@ -1,5 +1,6 @@
 import {resolve, nextTransition, initialState, advance, validate} from './model.js';
 import {loadDiagram} from '../d2/diagram.js';
+import {attachViewport} from './viewport.js';
 
 const $ = id => document.getElementById(id);
 const config = await (await fetch('/__config')).json();
@@ -14,6 +15,8 @@ const storageKey = content.storageKey || `${content.id}:walkthrough:v1`;
 let history = [initialState(content)];
 let restoredScroll;
 let diagram;
+let viewport;
+let restoredZoom = 1;
 const state = () => history.at(-1);
 const definition = () => content.steps.find(step => step.id === state().stage);
 function go(transition) {
@@ -112,6 +115,7 @@ function saveProgress() {
   try {
     localStorage.setItem(storageKey, JSON.stringify({
       history,
+      zoom: viewport?.zoom ?? restoredZoom,
       decisions: [...decisions],
       triedChoices: [...triedChoices].map(([stage, choices]) => [stage, [...choices]]),
       scroll: {step: $('step').scrollTop, diagramTop: $('diagram-panel').scrollTop, diagramLeft: $('diagram-panel').scrollLeft},
@@ -138,6 +142,7 @@ function restoreProgress() {
     for (const entry of checkpoints) decisions.set(...entry);
     for (const entry of tried) triedChoices.set(...entry);
     restoredScroll = saved.scroll;
+    if (Number.isFinite(saved.zoom)) restoredZoom = saved.zoom;
   } catch { /* Ignore incomplete or outdated saved progress. */ }
 }
 async function watchChanges() {
@@ -216,6 +221,10 @@ try {
   const errors = validate(content, diagram.ids);
   if (errors.length) throw new Error(errors.join('\n'));
   $('diagram-status').textContent = '';
+  viewport = attachViewport($('diagram-panel'), $('diagram').firstElementChild, {
+    out: $('zoom-out'), reset: $('zoom-reset'), into: $('zoom-in'),
+  }, restoredZoom, saveProgress);
+  $('zoom-reset').disabled = false;
   render();
   if (restoredScroll) {
     $('step').scrollTop = restoredScroll.step || 0;

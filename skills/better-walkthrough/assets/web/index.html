@@ -21,10 +21,17 @@
       <button id="next">Next</button>
     </nav>
   </div>
+  <div id="diagram-area">
   <section id="diagram-panel" aria-label="Diagram" tabindex="0">
     <p id="diagram-status" role="status"></p>
     <div id="diagram"></div>
   </section>
+  <nav id="zoom-controls" aria-label="Diagram zoom">
+    <button id="zoom-out" aria-label="Zoom out" disabled>−</button>
+    <button id="zoom-reset" aria-label="Reset zoom to 100 percent" disabled>100%</button>
+    <button id="zoom-in" aria-label="Zoom in" disabled>+</button>
+  </nav>
+  </div>
 </main>
 <script type="module" src="/web/index.js"></script>
 </html>

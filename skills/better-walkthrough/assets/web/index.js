@@ -140,7 +140,7 @@ function saveProgress() {
       showAll,
       decisions: [...decisions],
       triedChoices: [...triedChoices].map(([stage, choices]) => [stage, [...choices]]),
-      scroll: {step: $('step').scrollTop, diagramTop: $('diagram-panel').scrollTop, diagramLeft: $('diagram-panel').scrollLeft},
+      scroll: {step: $('step').scrollTop, choicesTop: $('choices').scrollTop, diagramTop: $('diagram-panel').scrollTop, diagramLeft: $('diagram-panel').scrollLeft},
     }));
   } catch { /* Continue normally if browser storage is unavailable. */ }
 }
@@ -213,6 +213,7 @@ function render() {
   }
   $('reasons').hidden = !$('reasons').childNodes.length;
   renderChoices(step, snapshot);
+  $('choices').scrollTop = 0;
   renderAlternatives();
   renderExploration();
   saveProgress();
@@ -244,7 +245,7 @@ $('restart').onclick = () => {
   render();
 };
 let scrollSave;
-for (const id of ['step', 'diagram-panel']) {
+for (const id of ['step', 'choices', 'diagram-panel']) {
   $(id).addEventListener('scroll', () => {
     clearTimeout(scrollSave);
     scrollSave = setTimeout(saveProgress, 100);
@@ -267,6 +268,7 @@ try {
   render();
   if (restoredScroll) {
     $('step').scrollTop = restoredScroll.step || 0;
+    $('choices').scrollTop = restoredScroll.choicesTop || 0;
     $('diagram-panel').scrollTop = restoredScroll.diagramTop || 0;
     $('diagram-panel').scrollLeft = restoredScroll.diagramLeft || 0;
     restoredScroll = null;

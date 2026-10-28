@@ -61,3 +61,8 @@
   .example-facts th, .example-facts td { text-align: left; vertical-align: top; padding: 4px; }
   .example-facts th { width: 40%; }
   .choice-dot { display: inline-block; width: 0.65em; height: 0.65em; border-radius: 50%; margin-right: 0.4em; }
+
+  .choice-columns { display: flex; gap: 12px; align-items: stretch; }
+  .choice-columns > div { flex: 0 0 200px; display: flex; flex-direction: column; align-items: start; }
+  .choice-columns .example-data { align-self: stretch; flex: 1; }
+  .choice-columns button { text-align: left; }

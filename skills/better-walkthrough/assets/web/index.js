@@ -74,6 +74,8 @@ function renderChoices(step, snapshot) {
   const heading = document.createElement('p'); heading.id = 'choices-title'; heading.className = 'panel-label';
   heading.textContent = step.legend || 'What to explore next?'; fieldset.append(heading);
   fieldset.setAttribute('aria-labelledby', heading.id);
+  const columns = document.createElement('div'); columns.className = 'choice-columns';
+  fieldset.append(columns);
   for (const choice of step.choices) {
     const section = document.createElement('div');
     const data = document.createElement('div'); data.className = 'example-data';
@@ -81,15 +83,15 @@ function renderChoices(step, snapshot) {
     renderExamples(data, resolve(choice.examples, snapshot));
     if (data.childNodes.length) { labelExample(data); section.append(data); }
     const button = document.createElement('button'); inline(button, choice.label);
-    if (colors.has(choice.edge)) {
+    if (colors.has(choice.id)) {
       const dot = document.createElement('span'); dot.className = 'choice-dot';
-      dot.style.backgroundColor = colors.get(choice.edge); dot.setAttribute('aria-hidden', 'true');
+      dot.style.backgroundColor = colors.get(choice.id); dot.setAttribute('aria-hidden', 'true');
       button.prepend(dot);
     }
     button.style.opacity = tried.has(choice.id) ? '0.5' : '1';
     button.dataset.choice = choice.id;
     button.onclick = () => { tried.add(choice.id); triedChoices.set(step.id, tried); go(choice); };
-    section.append(button); fieldset.append(section);
+    section.append(button); columns.append(section);
   }
   $('choices').append(fieldset);
 }
@@ -223,15 +225,15 @@ function render() {
 }
 function drawDiagram() {
   const step = definition();
-  const previewEdges = choiceColors(step.choices || []);
+  const colors = choiceColors(step.choices || []);
+  const previewEdges = (step.choices || []).map(choice => ({edge: choice.edge, label: choice.label.replaceAll('`', ''), color: colors.get(choice.id)}));
   diagram?.draw(state(), step.highlight, $('title').textContent, showAll, previewEdges);
   $('toggle-all').setAttribute('aria-pressed', String(showAll));
   $('toggle-all').title = showAll ? 'Show only the explored path' : 'Show the complete diagram';
 }
 function choiceColors(choices) {
   const palette = ['#0072B2', '#D55E00', '#009E73', '#CC79A7', '#E69F00', '#56B4E9', '#332288', '#882255'];
-  const edges = [...new Set(choices.map(choice => choice.edge).filter(Number.isInteger))];
-  return new Map(edges.map((edge, index) => [edge, palette[index % palette.length]]));
+  return new Map(choices.map((choice, index) => [choice.id, palette[index % palette.length]]));
 }
 $('toggle-all').onclick = () => { showAll = !showAll; drawDiagram(); saveProgress(); };
 $('back').onclick = () => { if (history.length > 1) { history.pop(); render(); } };

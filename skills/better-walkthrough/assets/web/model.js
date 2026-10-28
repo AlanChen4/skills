@@ -38,7 +38,11 @@ export function validate(content, diagramIds) {
     if (new Set(choices.map(choice => choice.id)).size !== choices.length) errors.push(`${step.id}: duplicate choice IDs`);
     const transitions = [...(Array.isArray(step.next) ? step.next : step.next ? [step.next] : []), ...choices];
     for (const choice of choices) {
-      if (!choice.id || !choice.label) errors.push(`${step.id}: choices need IDs and labels`);
+      if (!choice.id || typeof choice.label !== 'string' || !choice.label.trim()) errors.push(`${step.id}: choices need IDs and labels`);
+    }
+    for (const choice of choices) {
+      const target = steps.find(target => target.id === choice.to);
+      if (choice.edge === undefined && target && target.highlight !== step.highlight) errors.push(`${step.id}: choice ${choice.id} moves to ${target.highlight}; provide a diagram edge. Only choices that stay on the same node can use a temporary self-loop.`);
     }
     for (const transition of transitions) {
       if (!ids.has(transition.to)) errors.push(`${step.id}: unknown target ${transition.to}`);

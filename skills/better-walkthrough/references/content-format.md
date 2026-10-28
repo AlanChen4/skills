@@ -41,7 +41,9 @@ If D2 has several connections between the same endpoints, add `occurrence: 0` (o
 
 Existing `edges` arrays of decoded D2 connection IDs and numeric transition references remain supported. Named definitions may also use literal connection IDs for unusual D2 syntax.
 
-A step has either `next` or `choices`. Omit both for an end state. Choices have stable `id`, `label`, `summary`, `alternative`, `to`, and optional `edge`, `examples`, and `updates` fields. `alternative` completes “See what would've happened if…” at the end of a path.
+A step has either `next` or `choices`. Omit both for an end state. Choices have stable `id`, `label`, `summary`, `alternative`, `to`, and optional `edge`, `examples`, and `updates` fields. The viewer uses each choice `label` for both its button and its temporary edge label. Choices that share an edge get separate labels and colored markers. Omit `edge` only when the target step has the same `highlight`; the viewer draws a temporary self-loop. Choices that move to another node require an edge.
+
+`alternative` completes “See what would've happened if…” at the end of a path.
 
 `title`, `explanation`, `examples`, `reasons`, choice `summary`, and transition `updates` can be literal values or functions of the current state. Keep these functions pure. Return new state fields from `updates`; do not mutate history or call external services.
 

@@ -29,7 +29,7 @@
   #explored[data-complete="true"] { color: green; }
   #step, #diagram-panel { overflow: auto; min-width: 0; }
   #diagram-area { position: relative; min-width: 0; min-height: 0; }
-  #choices { position: absolute; top: 0; left: 0; z-index: 1; width: max-content; max-width: calc(100% - 16px); max-height: calc(100% - 64px); overflow: auto; background: Canvas; }
+  #choices { position: absolute; top: 0; left: 0; z-index: 1; width: calc(100% - 16px); max-width: calc(100% - 16px); max-height: calc(100% - 64px); overflow: auto; background: Canvas; }
   #choices:empty { display: none; }
   #choices fieldset { margin: 0; min-width: 0; }
   #diagram-panel { height: 100%; cursor: grab; touch-action: none; }
@@ -63,6 +63,6 @@
   .choice-dot { display: inline-block; width: 0.65em; height: 0.65em; border-radius: 50%; margin-right: 0.4em; }
 
   .choice-columns { display: flex; gap: 12px; align-items: stretch; }
-  .choice-columns > div { flex: 0 0 200px; display: flex; flex-direction: column; align-items: start; }
+  .choice-columns > div { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: start; }
   .choice-columns .example-data { align-self: stretch; flex: 1; }
-  .choice-columns button { text-align: left; }
+  .choice-columns button { text-align: left; max-width: 100%; overflow-wrap: anywhere; }

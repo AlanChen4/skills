@@ -15,7 +15,7 @@ export function advance(content, previous, transition) {
   if (transition.edge !== undefined && !edges.includes(transition.edge)) edges.push(transition.edge);
   return {...previous, ...resolve(transition.updates || {}, previous), stage: step.id,
     nodes: [...new Set([...previous.nodes, step.highlight])], edges,
-    activeEdge: transition.edge ?? previous.activeEdge};
+    activeEdge: transition.edge ?? previous.activeEdge, selectedChoice: transition.id ?? null};
 }
 export function validate(content, diagramIds) {
   const errors = [];

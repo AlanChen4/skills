@@ -47,7 +47,7 @@ export async function loadDiagram(url, container, content) {
   return {
     ids,
     content,
-    draw(state, current, title, showAll = false, previewEdges = []) {
+    draw(state, current, title, showAll = false, previewEdges = [], localChoices = []) {
       svg.setAttribute('aria-label', title);
       svg.querySelector('.choice-loops')?.remove();
       for (const {element, id, edgeIndex, isNode, isProvider, shapes} of items) {
@@ -80,7 +80,6 @@ export async function loadDiagram(url, container, content) {
           if (isNode && active) { shape.style.fill = '#FFE29A'; shape.style.strokeWidth = '4'; }
         }
       }
-      const localChoices = previewEdges.filter(choice => choice.edge === undefined);
       const node = items.find(item => item.isNode && item.id === current)?.element;
       if (node && localChoices.length) {
         const box = (node.querySelector(':scope > .shape') || node).getBBox();

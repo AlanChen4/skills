@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Walkthrough</title>
+<link rel="stylesheet" href="/web/styles.css">
+<main>
+  <div id="sidebar">
+    <section id="step" aria-labelledby="title" aria-live="polite">
+      <h2 id="title"></h2>
+      <p id="explanation"></p>
+      <ul id="reasons" hidden></ul>
+      <div id="data"></div>
+      <div id="choices"></div>
+      <div id="alternatives"></div>
+    </section>
+    <nav aria-label="Walkthrough controls">
+      <button id="restart" hidden>Restart</button>
+      <button id="back" disabled>Back</button>
+      <span id="explored" aria-live="polite">Explored 0%</span>
+      <button id="next">Next</button>
+    </nav>
+  </div>
+  <section id="diagram-panel" aria-label="Diagram" tabindex="0">
+    <p id="diagram-status" role="status"></p>
+    <div id="diagram"></div>
+  </section>
+</main>
+<script type="module" src="/web/index.js"></script>
+</html>

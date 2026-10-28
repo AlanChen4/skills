@@ -1,0 +1,36 @@
+  main {
+    display: grid;
+    grid-template-columns: min(320px, 42vw) minmax(0, 1fr);
+    gap: 16px;
+    height: calc(100dvh - 16px);
+  }
+  #sidebar {
+    border: 1px solid;
+    padding: 8px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    min-height: 0;
+    min-width: 0;
+  }
+  #sidebar nav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+  }
+  #back { grid-column: 1; justify-self: start; }
+  #next { grid-column: 3; justify-self: end; }
+  #restart { grid-column: 3; justify-self: end; }
+  #explored { grid-column: 2; white-space: nowrap; }
+  #explored[data-complete="true"] { color: green; }
+  #step, #diagram-panel { overflow: auto; min-width: 0; }
+  #step { overflow-wrap: anywhere; }
+  #step pre { white-space: pre-wrap; }
+  #data:not(:empty), .example-data {
+    background: #f2f2f2;
+    padding: 8px;
+    margin-block: 12px;
+  }
+  #data > :first-child, .example-data > :first-child { margin-top: 0; }
+  #data > :last-child, .example-data > :last-child { margin-bottom: 0; }

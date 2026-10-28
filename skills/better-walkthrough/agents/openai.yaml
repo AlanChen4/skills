@@ -1,0 +1,4 @@
+interface:
+  display_name: "Better Walkthrough"
+  short_description: "Explain product workflows with interactive D2 diagrams"
+  default_prompt: "Use $better-walkthrough to explain how this workflow operates in the current checkout."

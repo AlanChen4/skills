@@ -1,7 +1,7 @@
 ---
 name: better-one-by-one
 license: MIT
-description: Guide the user through a list of issues or tasks one at a time, with numbered progress at each step.
+description: Work through mentioned issues/tasks one by one, with progress tracker
 ---
 
 # Better one by one

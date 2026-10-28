@@ -47,12 +47,12 @@ export async function loadDiagram(url, container, content) {
   return {
     ids,
     content,
-    draw(state, current, title) {
+    draw(state, current, title, showAll = false) {
       svg.setAttribute('aria-label', title);
       for (const {element, id, edgeIndex, isNode, isProvider, shapes} of items) {
-        const visible = isProvider ? state.nodes.some(node => node.startsWith(id + '.')) : isNode ? state.nodes.includes(id) : state.edges.includes(edgeIndex);
+        const visible = showAll || (isProvider ? state.nodes.some(node => node.startsWith(id + '.')) : isNode ? state.nodes.includes(id) : state.edges.includes(edgeIndex));
         const active = isProvider ? current.startsWith(id + '.') : isNode ? current === id : edgeIndex === state.activeEdge;
-        element.style.opacity = visible ? (active ? '1' : '0.3') : '0';
+        element.style.opacity = visible ? (showAll || active ? '1' : '0.3') : '0';
         element.style.pointerEvents = visible ? 'auto' : 'none';
         element.setAttribute('aria-hidden', String(!visible));
         for (const {shape, originalStyle} of shapes) {

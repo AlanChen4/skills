@@ -17,6 +17,7 @@ let restoredScroll;
 let diagram;
 let viewport;
 let restoredZoom = 1;
+let showAll = false;
 const state = () => history.at(-1);
 const definition = () => content.steps.find(step => step.id === state().stage);
 function go(transition) {
@@ -128,6 +129,7 @@ function saveProgress() {
     localStorage.setItem(storageKey, JSON.stringify({
       history,
       zoom: viewport?.zoom ?? restoredZoom,
+      showAll,
       decisions: [...decisions],
       triedChoices: [...triedChoices].map(([stage, choices]) => [stage, [...choices]]),
       scroll: {step: $('step').scrollTop, diagramTop: $('diagram-panel').scrollTop, diagramLeft: $('diagram-panel').scrollLeft},
@@ -155,6 +157,7 @@ function restoreProgress() {
     for (const entry of tried) triedChoices.set(...entry);
     restoredScroll = saved.scroll;
     if (Number.isFinite(saved.zoom)) restoredZoom = saved.zoom;
+    showAll = saved.showAll === true;
   } catch { /* Ignore incomplete or outdated saved progress. */ }
 }
 async function watchChanges() {
@@ -205,8 +208,14 @@ function render() {
   renderAlternatives();
   renderExploration();
   saveProgress();
-  diagram?.draw(snapshot, step.highlight, $('title').textContent);
+  drawDiagram();
 }
+function drawDiagram() {
+  diagram?.draw(state(), definition().highlight, $('title').textContent, showAll);
+  $('toggle-all').setAttribute('aria-pressed', String(showAll));
+  $('toggle-all').title = showAll ? 'Show only the explored path' : 'Show the complete diagram';
+}
+$('toggle-all').onclick = () => { showAll = !showAll; drawDiagram(); saveProgress(); };
 $('back').onclick = () => { if (history.length > 1) { history.pop(); render(); } };
 $('restart').onclick = () => {
   if ($('restart').hidden) return;
@@ -239,6 +248,7 @@ try {
     out: $('zoom-out'), reset: $('zoom-reset'), into: $('zoom-in'),
   }, restoredZoom, saveProgress);
   $('zoom-reset').disabled = false;
+  $('toggle-all').disabled = false;
   render();
   if (restoredScroll) {
     $('step').scrollTop = restoredScroll.step || 0;

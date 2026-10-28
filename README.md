@@ -1,6 +1,6 @@
 # Skills
 
-A collection of agents skills to make delightful software.
+A collection of agents skills to make more delightful software.
 
 ## Available skills
 

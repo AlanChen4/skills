@@ -1,0 +1,4 @@
+interface:
+  display_name: "Better One by One"
+  short_description: "Work through issues and tasks one at a time"
+  default_prompt: "Use $better-one-by-one to work through these tasks one at a time."

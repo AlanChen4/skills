@@ -47,15 +47,33 @@ export async function loadDiagram(url, container, content) {
   return {
     ids,
     content,
-    draw(state, current, title, showAll = false, previewEdges = []) {
+    draw(state, current, title, showAll = false, previewEdges = new Map()) {
       svg.setAttribute('aria-label', title);
       for (const {element, id, edgeIndex, isNode, isProvider, shapes} of items) {
-        const upcoming = edgeIndex >= 0 && previewEdges.includes(edgeIndex);
+        const upcoming = edgeIndex >= 0 && previewEdges.has(edgeIndex);
         const visible = showAll || upcoming || (isProvider ? state.nodes.some(node => node.startsWith(id + '.')) : isNode ? state.nodes.includes(id) : state.edges.includes(edgeIndex));
         const active = isProvider ? current.startsWith(id + '.') : isNode ? current === id : edgeIndex === state.activeEdge;
-        element.style.opacity = visible ? (showAll || active ? '1' : upcoming ? '0.65' : '0.3') : '0';
+        element.style.opacity = visible ? (showAll || active || upcoming ? '1' : '0.3') : '0';
         element.style.pointerEvents = visible ? 'auto' : 'none';
         element.setAttribute('aria-hidden', String(!visible));
+        if (edgeIndex >= 0) {
+          let marker = element.querySelector('.choice-edge-marker');
+          if (upcoming) {
+            if (!marker) {
+              marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+              marker.setAttribute('class', 'choice-edge-marker');
+              marker.setAttribute('r', '4'); marker.setAttribute('aria-hidden', 'true');
+              element.append(marker);
+            }
+            const label = element.querySelector('text');
+            const path = element.querySelector('path.connection');
+            const box = label?.getBBox();
+            const point = !box && path?.getPointAtLength(path.getTotalLength() / 2);
+            marker.setAttribute('cx', box ? box.x - 10 : point.x);
+            marker.setAttribute('cy', box ? box.y + box.height / 2 : point.y - 10);
+            marker.setAttribute('fill', previewEdges.get(edgeIndex));
+          } else marker?.remove();
+        }
         for (const {shape, originalStyle} of shapes) {
           shape.setAttribute('style', originalStyle);
           if (isNode && active) { shape.style.fill = '#FFE29A'; shape.style.strokeWidth = '4'; }

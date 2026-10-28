@@ -68,6 +68,7 @@ function renderExamples(parent, examples = []) {
 function renderChoices(step, snapshot) {
   if (!step.choices?.length) return;
   const tried = triedChoices.get(step.id) || new Set();
+  const colors = choiceColors(step.choices);
   decisions.set(step.id, {history: history.slice(), options: step.choices.map(choice => choice.id)});
   const fieldset = document.createElement('fieldset');
   const legend = document.createElement('legend'); legend.textContent = step.legend || 'Choices'; fieldset.append(legend);
@@ -78,6 +79,11 @@ function renderChoices(step, snapshot) {
     renderExamples(data, resolve(choice.examples, snapshot));
     if (data.childNodes.length) { labelExample(data); section.append(data); }
     const button = document.createElement('button'); inline(button, choice.label);
+    if (colors.has(choice.edge)) {
+      const dot = document.createElement('span'); dot.className = 'choice-dot';
+      dot.style.backgroundColor = colors.get(choice.edge); dot.setAttribute('aria-hidden', 'true');
+      button.prepend(dot);
+    }
     button.style.opacity = tried.has(choice.id) ? '0.5' : '1';
     button.dataset.choice = choice.id;
     button.onclick = () => { tried.add(choice.id); triedChoices.set(step.id, tried); go(choice); };
@@ -214,11 +220,15 @@ function render() {
 }
 function drawDiagram() {
   const step = definition();
-  const choices = step.choices || [];
-  const previewEdges = choices.map(choice => choice.edge).filter(edge => edge !== undefined);
+  const previewEdges = choiceColors(step.choices || []);
   diagram?.draw(state(), step.highlight, $('title').textContent, showAll, previewEdges);
   $('toggle-all').setAttribute('aria-pressed', String(showAll));
   $('toggle-all').title = showAll ? 'Show only the explored path' : 'Show the complete diagram';
+}
+function choiceColors(choices) {
+  const palette = ['#0072B2', '#D55E00', '#009E73', '#CC79A7', '#E69F00', '#56B4E9', '#332288', '#882255'];
+  const edges = [...new Set(choices.map(choice => choice.edge).filter(Number.isInteger))];
+  return new Map(edges.map((edge, index) => [edge, palette[index % palette.length]]));
 }
 $('toggle-all').onclick = () => { showAll = !showAll; drawDiagram(); saveProgress(); };
 $('back').onclick = () => { if (history.length > 1) { history.pop(); render(); } };

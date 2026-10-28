@@ -213,7 +213,10 @@ function render() {
   drawDiagram();
 }
 function drawDiagram() {
-  diagram?.draw(state(), definition().highlight, $('title').textContent, showAll);
+  const step = definition();
+  const choices = step.choices || [];
+  const previewEdges = choices.map(choice => choice.edge).filter(edge => edge !== undefined);
+  diagram?.draw(state(), step.highlight, $('title').textContent, showAll, previewEdges);
   $('toggle-all').setAttribute('aria-pressed', String(showAll));
   $('toggle-all').title = showAll ? 'Show only the explored path' : 'Show the complete diagram';
 }

@@ -6,3 +6,4 @@
 - Keep skill-specific rules in that skill's SKILL.md or supporting references.
 - Keep local experiments in the ignored examples/ directory.
 - Run checks relevant to the skill and files changed.
+- Use Conventional Commits: `<type>(optional-scope): <description>` (e.g. `feat(better-walkthrough): add zoom controls` or `docs: update catalog`).

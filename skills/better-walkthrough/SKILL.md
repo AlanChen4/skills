@@ -14,7 +14,7 @@ Read [authoring.md](references/authoring.md) to trace the implementation and exp
 
 ## Create
 
-Follow [workspaces.md](references/workspaces.md) to create an external workspace. Keep the product checkout unchanged unless the user requests changes.
+Follow [workspaces.md](references/workspaces.md) to create a local `.better-walkthrough/` folder with a self-ignoring `.gitignore`. Keep product code and tracked configuration unchanged.
 
 Use [content-format.md](references/content-format.md) to write content.js and diagram.d2. Reuse the bundled interface and the authoring guide's diagram and interaction rules.
 

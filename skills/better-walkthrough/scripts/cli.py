@@ -5,18 +5,58 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Lock, Thread
 import json
+import os
+import re
 import subprocess
 import shutil
 import sys
 import tempfile
 from urllib.parse import unquote, urlsplit, urljoin
 from urllib.request import urlopen
-sys.dont_write_bytecode = True
-from workspace import initialize, workspace_path
 
 ROOT = Path(__file__).resolve().parents[1] / 'assets'
 render_lock = Lock()
 rendered_source = None
+
+
+def workspace_path(repo, name):
+    if not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,63}', name):
+        raise ValueError('Use a workflow name of up to 64 lowercase letters, digits, or hyphens.')
+    repo = repo.expanduser().resolve()
+    if not repo.is_dir():
+        raise ValueError('The source repository must be an existing directory.')
+    try:
+        result = subprocess.run(['git', '-C', str(repo), 'rev-parse', '--show-toplevel'],
+            capture_output=True, text=True, timeout=5, env={**os.environ, 'GIT_OPTIONAL_LOCKS': '0'})
+        if result.returncode == 0:
+            repo = Path(result.stdout.strip()).resolve()
+    except (OSError, subprocess.TimeoutExpired):
+        pass  # Directories without Git use the supplied root.
+    root = repo / '.better-walkthrough'
+    folder = root / name
+    if root.is_symlink() or folder.is_symlink():
+        raise ValueError('The walkthrough directory must not be a symbolic link.')
+    return root, folder
+
+
+def initialize(repo, name):
+    root, folder = workspace_path(repo, name)
+    try:
+        tracked = subprocess.run(['git', '-C', str(root.parent), 'ls-files', '--', '.better-walkthrough'],
+            capture_output=True, text=True, timeout=5, env={**os.environ, 'GIT_OPTIONAL_LOCKS': '0'})
+        if tracked.returncode == 0 and tracked.stdout.strip():
+            raise ValueError('.better-walkthrough contains tracked files. Choose a checkout without tracked walkthrough artifacts.')
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    root.mkdir(exist_ok=True)
+    ignore = root / '.gitignore'
+    if ignore.is_symlink():
+        raise ValueError('The walkthrough .gitignore must not be a symbolic link.')
+    text = ignore.read_text(encoding='utf-8') if ignore.exists() else ''
+    if not text.splitlines() or text.splitlines()[-1].strip() != '*':
+        ignore.write_text(text + ('\n' if text and not text.endswith('\n') else '') + '*\n', encoding='utf-8')
+    folder.mkdir(exist_ok=True)
+    return folder
 
 
 SETUP = """Install the dependencies, then rerun --doctor:
@@ -177,10 +217,9 @@ select an available port automatically. No additional validator or HTTP calls ar
     parser.add_argument('--doctor', action='store_true', help='Check dependencies and optionally compile a walkthrough without changing its files')
     parser.add_argument('--setup', action='store_true', help='Print dependency installation instructions')
     parser.add_argument('--layout', help='Override the diagram layout engine (see d2 layout)')
-    parser.add_argument('--init', action='store_true', help='Create an external workspace and source manifest; print its path')
+    parser.add_argument('--init', action='store_true', help='Create .better-walkthrough/<name> with a self-ignoring .gitignore; print its path')
     parser.add_argument('--repo', type=Path, help='Source checkout (required with --init)')
-    parser.add_argument('--name', help='Workflow name used to locate its external workspace')
-    parser.add_argument('--output-root', type=Path, help='Override the external data directory')
+    parser.add_argument('--name', help='Workflow name inside .better-walkthrough/')
     args = parser.parse_args(argv)
     if not 0 <= args.port <= 65535:
         parser.error('--port must be between 0 and 65535. Example: --walkthrough /path/to/walkthrough --port 0')
@@ -192,15 +231,15 @@ select an available port automatically. No additional validator or HTTP calls ar
         if not args.repo or not args.name or args.walkthrough or args.check or args.doctor or args.setup:
             parser.error('--init requires --repo and --name, without --walkthrough, --check, --doctor, or --setup')
         try:
-            print(initialize(args.repo, args.name, args.output_root))
+            print(initialize(args.repo, args.name))
         except (OSError, ValueError) as error:
             parser.exit(1, f'{error}\n')
         return
-    if args.repo or args.name or args.output_root:
+    if args.repo or args.name:
         if not args.repo or not args.name or args.walkthrough:
             parser.error('Use --repo and --name together, or use --walkthrough')
         try:
-            _, args.walkthrough = workspace_path(args.repo, args.name, args.output_root)
+            _, args.walkthrough = workspace_path(args.repo, args.name)
         except ValueError as error:
             parser.exit(1, f'{error}\n')
     layout = args.layout

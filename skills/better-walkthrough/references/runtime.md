@@ -4,10 +4,10 @@ Resolve `<skill-directory>` to the installed folder containing SKILL.md. Command
 
 ## Compile and validate
 
-Create an [external workspace](workspaces.md) and write its [content and diagram source](content-format.md), then run:
+Create a [local walkthrough folder](workspaces.md) and write its [content and diagram source](content-format.md), then run:
 
 ```sh
-python3 <skill-directory>/scripts/walkthrough.py --walkthrough <walkthrough-directory> --check
+python3 <skill-directory>/scripts/cli.py --walkthrough <walkthrough-directory> --check
 ```
 
 This single command checks dependencies, compiles D2, validates content and connections, and checks the viewer's HTTP routes using a temporary local server. The temporary server stops before the command exits. Do not repeat validation with the internal JavaScript validator or separate HTTP requests.
@@ -32,7 +32,7 @@ Resolve reported errors before serving. These checks validate structure and HTTP
 Use Python 3.9 or newer, a current Node.js LTS release, and D2 with the diagram's selected layout engine. No npm or pip packages are required by the runtime.
 
 ```sh
-python3 <skill-directory>/scripts/walkthrough.py --doctor
+python3 <skill-directory>/scripts/cli.py --doctor
 ```
 
 Use this diagnostic when dependencies fail; it is not required before `--check`. It probes the required Node.js features and compiles a temporary diagram. To check an existing diagram's selected engine without changing its files, add `--walkthrough <walkthrough-directory>`.
@@ -40,7 +40,7 @@ Use this diagnostic when dependencies fail; it is not required before `--check`.
 If a dependency is missing, print setup instructions:
 
 ```sh
-python3 <skill-directory>/scripts/walkthrough.py --setup
+python3 <skill-directory>/scripts/cli.py --setup
 ```
 
 This command prints installation guidance from the official Python, Node.js, and D2 sites. It does not install software. Run `d2 layout` to list available engines. Use `--layout <name>` to explicitly override a diagram's selection; preserve its existing engine when updating a walkthrough unless a change is needed and explained.
@@ -48,12 +48,12 @@ This command prints installation guidance from the official Python, Node.js, and
 ## Serve
 
 ```sh
-python3 <skill-directory>/scripts/walkthrough.py --walkthrough <walkthrough-directory> --port 8765
+python3 <skill-directory>/scripts/cli.py --walkthrough <walkthrough-directory> --port 8765
 ```
 
 Serving performs the same validation and HTTP checks before printing the viewer URL, content URL, SVG URL, reload URL, and artifact directory. A separate `--check` immediately before serving is unnecessary if nothing changed. Return the printed viewer URL and artifact directory. Use `--port 0` to choose an available port automatically and preserve existing viewers. Use Ctrl+C to stop the server.
 
-For an initialized workspace, replace `--walkthrough <walkthrough-directory>` with `--repo <checkout> --name <workflow>`. Use the same storage override as initialization; see [workspace storage](workspaces.md#storage).
+For an initialized walkthrough, replace `--walkthrough <walkthrough-directory>` with `--repo <checkout> --name <workflow>`. Existing folders outside the checkout remain accessible through `--walkthrough`.
 
 The server serves the bundled interface and files within the selected walkthrough folder. It recompiles changed D2 source and reloads changes to the web files and content. The shared interface preserves progress across refreshes. Its behavior is defined in [the authoring guidance](authoring.md#use-the-shared-interface).
 

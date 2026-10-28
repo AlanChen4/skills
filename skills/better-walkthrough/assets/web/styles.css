@@ -1,6 +1,6 @@
   main {
     display: grid;
-    grid-template-columns: min(320px, 42vw) minmax(0, 1fr);
+    grid-template-columns: min(384px, 42vw) minmax(0, 1fr);
     gap: 16px;
     height: calc(100dvh - 16px);
   }
@@ -40,3 +40,4 @@
   }
   #data > :first-child, .example-data > :first-child { margin-top: 0; }
   #data > :last-child, .example-data > :last-child { margin-bottom: 0; }
+  .example-label { display: block; color: #666; margin-bottom: 6px; }

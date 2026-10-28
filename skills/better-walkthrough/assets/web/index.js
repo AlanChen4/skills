@@ -23,15 +23,27 @@ function go(transition) {
   history.push(advance(content, state(), transition));
   render();
 }
+function inline(parent, text) {
+  parent.replaceChildren();
+  String(text ?? '').split(/`([^`\n]+)`/g).forEach((part, index) => {
+    if (index % 2) {
+      const code = document.createElement('code'); code.textContent = part; parent.append(code);
+    } else parent.append(document.createTextNode(part));
+  });
+}
+function labelExample(parent) {
+  const label = document.createElement('small');
+  label.className = 'example-label'; label.textContent = 'Example'; parent.prepend(label);
+}
 function paragraph(parent, text) {
-  const p = document.createElement('p'); p.textContent = text; parent.append(p);
+  const p = document.createElement('p'); inline(p, text); parent.append(p);
 }
 function renderExamples(parent, examples = []) {
   for (const example of examples) {
     let target = parent;
     if (example.disclosure) {
       target = document.createElement('details');
-      const summary = document.createElement('summary'); summary.textContent = example.disclosure;
+      const summary = document.createElement('summary'); inline(summary, example.disclosure);
       target.append(summary); parent.append(target);
     }
     if (example.text) paragraph(target, example.text);
@@ -39,8 +51,8 @@ function renderExamples(parent, examples = []) {
     if (example.facts) {
       const list = document.createElement('dl');
       for (const [label, value] of Object.entries(example.facts)) {
-        const term = document.createElement('dt'); term.textContent = label;
-        const detail = document.createElement('dd'); detail.textContent = String(value);
+        const term = document.createElement('dt'); inline(term, label);
+        const detail = document.createElement('dd'); inline(detail, String(value));
         list.append(term, detail);
       }
       target.append(list);
@@ -61,8 +73,8 @@ function renderChoices(step, snapshot) {
     const data = document.createElement('div'); data.className = 'example-data';
     if (choice.summary) paragraph(data, resolve(choice.summary, snapshot));
     renderExamples(data, resolve(choice.examples, snapshot));
-    if (data.childNodes.length) section.append(data);
-    const button = document.createElement('button'); button.textContent = choice.label;
+    if (data.childNodes.length) { labelExample(data); section.append(data); }
+    const button = document.createElement('button'); inline(button, choice.label);
     button.style.opacity = tried.has(choice.id) ? '0.5' : '1';
     button.dataset.choice = choice.id;
     button.onclick = () => { tried.add(choice.id); triedChoices.set(step.id, tried); go(choice); };
@@ -98,7 +110,7 @@ function renderAlternatives() {
     const item = document.createElement('li');
     const link = document.createElement('a');
     link.href = '#';
-    link.textContent = options.find(option => option.id === label)?.alternative || label;
+    inline(link, options.find(option => option.id === label)?.alternative || label);
     link.onclick = event => {
       event.preventDefault();
       history = checkpoint.slice();
@@ -176,16 +188,17 @@ function renderExploration() {
 
 function render() {
   const snapshot = state(), step = definition();
-  $('title').textContent = resolve(step.title, snapshot);
-  $('explanation').textContent = resolve(step.explanation, snapshot) || '';
+  inline($('title'), resolve(step.title, snapshot));
+  inline($('explanation'), resolve(step.explanation, snapshot));
   $('data').replaceChildren(); $('choices').replaceChildren(); $('reasons').replaceChildren();
   $('back').disabled = history.length === 1;
   const next = nextTransition(step, snapshot);
   $('next').disabled = !next;
   $('next').onclick = next ? () => go(next) : null;
   renderExamples($('data'), resolve(step.examples, snapshot));
+  if ($('data').childNodes.length) labelExample($('data'));
   for (const reason of resolve(step.reasons, snapshot) || []) {
-    const li = document.createElement('li'); li.textContent = reason; $('reasons').append(li);
+    const li = document.createElement('li'); inline(li, reason); $('reasons').append(li);
   }
   $('reasons').hidden = !$('reasons').childNodes.length;
   renderChoices(step, snapshot);

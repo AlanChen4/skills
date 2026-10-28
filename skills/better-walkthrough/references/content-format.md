@@ -49,6 +49,8 @@ For conditional navigation, `next` can be an array of transitions with `when: st
 
 Keep `explanation` brief. Put supporting points in `reasons`, which the interface renders as a bullet list, rather than joining them into a long paragraph.
 
+Wrap code references in backticks (e.g. `check_stock`) for inline code styling in narrative text. Other Markdown and HTML are rendered as plain text.
+
 Examples support `data` for JSON, `facts` for labeled values, `text`, and `paragraphs`. Prefer `facts` for separate values and keep text short. Add `disclosure` to put content inside a native expandable section. The interface supplies gray containers.
 
 Use a unique walkthrough `id`. Saved progress uses that ID unless `storageKey` is supplied. Keep IDs, storage keys, and connection order unchanged when moving files to preserve progress at the same viewer origin. Change the storage key when state changes are incompatible.

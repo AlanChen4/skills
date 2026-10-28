@@ -3,13 +3,14 @@ import argparse
 from hashlib import sha256
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from threading import Lock
+from threading import Lock, Thread
 import json
 import subprocess
 import shutil
 import sys
 import tempfile
-from urllib.parse import unquote, urlsplit
+from urllib.parse import unquote, urlsplit, urljoin
+from urllib.request import urlopen
 sys.dont_write_bytecode = True
 from workspace import initialize, workspace_path
 
@@ -126,16 +127,53 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_error(500, 'Could not compile the diagram')
 
     def log_request(self, code='-', size='-'):
-        if self.path.split('?', 1)[0] != '/__version' or code != 200:
+        if not quiet_requests and (self.path.split('?', 1)[0] != '/__version' or code != 200):
             super().log_request(code, size)
 
 
+def smoke_check(base, diagram):
+    """Check the viewer's real routes without running a browser or product code."""
+    def read(route):
+        with urlopen(urljoin(base, route), timeout=5) as response:
+            if response.status != 200:
+                raise RuntimeError(f'Viewer check failed: {route} returned {response.status}')
+            return response.read()
+    config = json.loads(read('/__config'))
+    content_route = config['content']
+    diagram_route = urljoin(content_route, diagram)
+    if not content_route.startswith('/walkthrough/') or not diagram_route.startswith('/walkthrough/'):
+        raise RuntimeError('Viewer content and diagram must use /walkthrough/ routes.')
+    expected = {'/': (ROOT / 'web/index.html').read_bytes(), content_route: (example / 'content.js').read_bytes(),
+                diagram_route: (example / unquote(diagram_route.removeprefix('/walkthrough/'))).read_bytes()}
+    # Required viewer dependencies, including files whose absence must fail the check.
+    for relative in ['web/index.js', 'web/model.js', 'web/viewport.js', 'web/styles.css', 'd2/diagram.js', 'd2/connections.js']:
+        expected['/' + relative] = (ROOT / relative).read_bytes()
+    for route, body in expected.items():
+        if read(route) != body:
+            raise RuntimeError(f'Viewer check failed: incorrect response at {route}')
+    if not json.loads(read('/__version')).get('revision'):
+        raise RuntimeError('Viewer check failed: missing reload revision.')
+    return {'routes': len(expected) + 2, 'content': content_route, 'diagram': diagram_route}
+
+
 def main(argv=None):
-    global example, svg, rendered_source, layout
-    parser = argparse.ArgumentParser(description=__doc__)
+    global example, svg, rendered_source, layout, quiet_requests
+    quiet_requests = True
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='''Examples:
+  python3 %(prog)s --init --repo /path/to/repo --name onboarding
+  python3 %(prog)s --walkthrough /path/to/walkthrough --check
+  python3 %(prog)s --walkthrough /path/to/walkthrough --check --json
+  python3 %(prog)s --walkthrough /path/to/walkthrough --port 0
+
+Exit codes: 0 success; 1 check or runtime failure; 2 invalid arguments.
+--check compiles, validates, and checks HTTP routes using a temporary local server.
+Serving performs the same checks before printing the viewer URL. Use port 0 to
+select an available port automatically. No additional validator or HTTP calls are needed.''')
     parser.add_argument('--walkthrough', type=Path, help='Folder containing content.js and diagram.d2')
-    parser.add_argument('--port', type=int, default=8765)
-    parser.add_argument('--check', action='store_true', help='Compile and validate, then exit')
+    parser.add_argument('--port', type=int, default=8765, help='Viewer port; 0 selects an available port (default: 8765)')
+    parser.add_argument('--check', action='store_true', help='Compile, validate, smoke-check HTTP routes, then exit')
+    parser.add_argument('--json', action='store_true', help='Print a machine-readable report (requires --check)')
     parser.add_argument('--doctor', action='store_true', help='Check dependencies and optionally compile a walkthrough without changing its files')
     parser.add_argument('--setup', action='store_true', help='Print dependency installation instructions')
     parser.add_argument('--layout', help='Override the diagram layout engine (see d2 layout)')
@@ -144,6 +182,12 @@ def main(argv=None):
     parser.add_argument('--name', help='Workflow name used to locate its external workspace')
     parser.add_argument('--output-root', type=Path, help='Override the external data directory')
     args = parser.parse_args(argv)
+    if not 0 <= args.port <= 65535:
+        parser.error('--port must be between 0 and 65535. Example: --walkthrough /path/to/walkthrough --port 0')
+    if args.json and (not args.check or args.init or args.doctor or args.setup):
+        parser.error('--json requires --check. Example: --walkthrough /path/to/walkthrough --check --json')
+    if sum([args.init, args.check, args.doctor, args.setup]) > 1:
+        parser.error('Choose one action: --init, --check, --doctor, or --setup. Example: --walkthrough /path/to/walkthrough --check')
     if args.init:
         if not args.repo or not args.name or args.walkthrough or args.check or args.doctor or args.setup:
             parser.error('--init requires --repo and --name, without --walkthrough, --check, --doctor, or --setup')
@@ -163,6 +207,8 @@ def main(argv=None):
     if args.setup:
         print(SETUP)
         return
+    if not args.walkthrough and not args.doctor:
+        parser.error('Choose a walkthrough. Example: --walkthrough /path/to/walkthrough --check')
     try:
         versions = check_dependencies()
     except RuntimeError as error:
@@ -188,12 +234,29 @@ def main(argv=None):
     rendered_source = None
     try:
         refresh_diagram()
-        print(run_checked(['node', str(ROOT / 'web/validate.js'), str(example / 'content.js')]))
-    except RuntimeError as error:
+        report = json.loads(run_checked(['node', str(ROOT / 'web/validate.js'), str(example / 'content.js'), '--json']))
+        server = ThreadingHTTPServer(('127.0.0.1' if args.check else '0.0.0.0', 0 if args.check else args.port), Handler)
+    except (OSError, RuntimeError) as error:
         parser.exit(1, f'{error}\nCheck the diagram and content. Run --doctor --walkthrough <folder> to check its layout engine.\n')
-    if not args.check:
-        print(f'Walkthrough: http://localhost:{args.port}/', flush=True)
-        ThreadingHTTPServer(('0.0.0.0', args.port), Handler).serve_forever()
+    worker = Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    base = f'http://localhost:{server.server_port}/'
+    try:
+        viewer = smoke_check(base, report['diagram'])
+        report.update({'ok': True, 'artifacts': str(example), 'viewer': viewer})
+        if args.check:
+            print(json.dumps(report) if args.json else f"{report['id']}: {report['steps']} steps, {report['connections']} connections; {viewer['routes']} viewer routes checked.\nArtifacts: {example}")
+        else:
+            quiet_requests = False
+            print(f"Validated: {report['steps']} steps, {report['connections']} connections; {viewer['routes']} viewer routes checked.\nWalkthrough: {base}\nContent: {urljoin(base, viewer['content'])}\nDiagram: {urljoin(base, viewer['diagram'])}\nReload: {urljoin(base, '/__version')}\nArtifacts: {example}", flush=True)
+            worker.join()
+    except (OSError, RuntimeError, ValueError, KeyError) as error:
+        parser.exit(1, f'Viewer check failed: {error}\nRerun --walkthrough {example} --check for diagnostics.\n')
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.shutdown()
+        server.server_close()
 
 
 if __name__ == '__main__':

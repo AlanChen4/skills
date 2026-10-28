@@ -4,18 +4,28 @@ import {pathToFileURL} from 'node:url';
 import {validate} from './model.js';
 import {diagramIds} from '../d2/diagram.js';
 import {validateGeometry} from '../d2/geometry.js';
+import {resolveConnections} from '../d2/connections.js';
 
 if (!process.argv[2]) {
   console.error('Usage: node validate.js /path/to/walkthrough/content.js');
   process.exit(1);
 }
 const path = pathToFileURL(pathResolve(process.argv[2]));
-const {default: content} = await import(path.href);
+const {default: rawContent} = await import(path.href);
+let content = rawContent;
 const svg = await readFile(new URL(content.diagram, path), 'utf8');
-const errors = [...validate(content, diagramIds(svg)), ...validateGeometry(svg)];
+const ids = diagramIds(svg);
+let errors;
+try {
+  content = resolveConnections(content, ids);
+  errors = [...validate(content, ids), ...validateGeometry(svg)];
+} catch (error) {
+  errors = [error.message];
+}
 if (errors.length) {
   for (const error of errors) console.error(error);
   process.exitCode = 1;
 } else {
-  console.log(`${content.id}: ${content.steps.length} steps and ${content.edges.length} diagram connections validated.`);
+  const result = {id: content.id, steps: content.steps.length, connections: content.edges.length, diagram: content.diagram};
+  console.log(process.argv.includes('--json') ? JSON.stringify(result) : `${result.id}: ${result.steps} steps and ${result.connections} diagram connections validated.`);
 }

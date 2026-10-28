@@ -1,3 +1,5 @@
+import {resolveConnections} from './connections.js';
+
 // D2 SVG groups encode their source IDs in the first CSS class.
 export function decodeId(className) {
   try { return atob(className.split(' ')[0]).replaceAll('&gt;', '>').replaceAll('&lt;', '<').replaceAll('&amp;', '&'); } catch { return null; }
@@ -14,6 +16,8 @@ export async function loadDiagram(url, container, content) {
   const response = await fetch(url, {cache: 'no-store'});
   if (!response.ok) throw new Error('Diagram loading failed');
   const text = await response.text();
+  const ids = diagramIds(text);
+  content = resolveConnections(content, ids);
   const parsed = new DOMParser().parseFromString(text, 'image/svg+xml');
   if (parsed.querySelector('parsererror')) throw new Error('Invalid diagram');
   const svg = document.importNode(parsed.documentElement, true);
@@ -41,7 +45,8 @@ export async function loadDiagram(url, container, content) {
   }
   container.replaceChildren(svg);
   return {
-    ids: diagramIds(text),
+    ids,
+    content,
     draw(state, current, title) {
       svg.setAttribute('aria-label', title);
       for (const {element, id, edgeIndex, isNode, isProvider, shapes} of items) {

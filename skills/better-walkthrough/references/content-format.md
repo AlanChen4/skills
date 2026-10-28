@@ -11,7 +11,9 @@ export default {
   diagram: './diagram.svg',
   start: 'received',
   initial: {},
-  edges: ['(shop.order -> warehouse.stock)[0]'],
+  edges: {
+    checkStock: {from: 'shop.order', to: 'warehouse.stock'},
+  },
   steps: [
     {
       id: 'received',
@@ -19,7 +21,7 @@ export default {
       explanation: 'The order contains 3 units.',
       highlight: 'shop.order',
       examples: [{data: {quantity: 3}}],
-      next: {to: 'stock', edge: 0},
+      next: {to: 'stock', edge: 'checkStock'},
     },
     {
       id: 'stock',
@@ -33,7 +35,11 @@ export default {
 };
 ```
 
-`highlight` is a D2 node ID. `edges` lists decoded D2 connection IDs; transitions use their array indices. Decode the generated SVG with `diagramIds` from this skill's `assets/d2/diagram.js` to inspect IDs, including D2's scoped connection notation. IDs are checked against the SVG rather than matched by drawing order.
+`highlight` is a D2 node ID. Define `edges` with readable names and fully qualified `from` and `to` node IDs. Transitions use the connection name. The browser and validator resolve these endpoints against the compiled SVG, including connections within groups. Do not construct D2's encoded or scoped connection IDs by hand.
+
+If D2 has several connections between the same endpoints, add `occurrence: 0` (or 1, 2, and so on) to select their order in the D2 source. Ambiguous or missing connections fail with an actionable error.
+
+Existing `edges` arrays of decoded D2 connection IDs and numeric transition references remain supported. Preserve their order and existing storage keys when updating a walkthrough, so saved progress remains valid. Named definitions may also use literal connection IDs for unusual D2 syntax.
 
 A step has either `next` or `choices`. Omit both for an end state. Choices have stable `id`, `label`, `summary`, `alternative`, `to`, and optional `edge`, `examples`, and `updates` fields. `alternative` completes “See what would've happened if…” at the end of a path.
 

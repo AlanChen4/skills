@@ -5,7 +5,7 @@ import {attachViewport} from './viewport.js';
 const $ = id => document.getElementById(id);
 const config = await (await fetch('/__config')).json();
 const contentUrl = new URL(config.content, location.href);
-const {default: content} = await import(contentUrl.href);
+let {default: content} = await import(contentUrl.href);
 document.title = content.title;
 const node = Object.fromEntries(content.steps.map(step => [step.id, step.highlight]));
 const decisionOptions = Object.fromEntries(content.steps.filter(step => step.choices?.length).map(step => [step.id, step.choices.map(choice => choice.id)]));
@@ -214,12 +214,13 @@ for (const id of ['step', 'diagram-panel']) {
   });
 }
 addEventListener('pagehide', saveProgress);
-restoreProgress();
 try {
   $('diagram-status').textContent = 'Loading diagram…';
   diagram = await loadDiagram(new URL(content.diagram, contentUrl), $('diagram'), content);
+  content = diagram.content;
   const errors = validate(content, diagram.ids);
   if (errors.length) throw new Error(errors.join('\n'));
+  restoreProgress();
   $('diagram-status').textContent = '';
   viewport = attachViewport($('diagram-panel'), $('diagram').firstElementChild, {
     out: $('zoom-out'), reset: $('zoom-reset'), into: $('zoom-in'),

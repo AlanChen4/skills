@@ -20,7 +20,7 @@ Use [content-format.md](references/content-format.md) to write content.js and di
 
 ## Validate
 
-Follow [runtime.md](references/runtime.md) to check dependencies, compile the diagram, and validate its references. Resolve reported errors. Structural checks do not certify business accuracy; ground the explanation in the implementation.
+Follow [runtime.md](references/runtime.md) to run `--check` for compilation, reference validation, and viewer HTTP checks. Serving runs the same checks, so use one path without repeating validation. Resolve reported errors. Structural checks do not certify business accuracy; ground the explanation in the implementation.
 
 ## Deliver
 

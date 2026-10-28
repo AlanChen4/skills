@@ -6,4 +6,4 @@
 - Keep skill-specific rules in that skill's SKILL.md or supporting references.
 - Keep local experiments in the ignored examples/ directory.
 - Run checks relevant to the skill and files changed.
-- Use Conventional Commits: `<type>(optional-scope): <description>` (e.g. `feat(better-walkthrough): add zoom controls` or `docs: update catalog`).
+- Use Conventional Commits for commit messages and PR titles: `<type>(optional-scope): <description>` (e.g. `feat(better-walkthrough): add zoom controls` or `docs: update catalog`). Write PR titles to serve as squash commit messages.

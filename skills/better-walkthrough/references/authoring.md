@@ -28,6 +28,7 @@ Store repository-relative source paths with the walkthrough. Step-level source r
 - Name services and interfaces specifically (e.g. “Stripe Payments API” instead of “External service”).
 - Show each shared resource once. Label connections with operations (e.g. one inventory database with “Check stock” and “Reserve items” arrows).
 - Distinguish people, processes, decisions, databases, and AI with shapes (e.g. person, rectangle, diamond, cylinder, and hexagon).
+- Keep person shapes near their natural proportions. Put long labels outside the silhouette; use width 96 and height 108 when automatic sizing distorts it. Keep automatic layout for node positions.
 - Use automatic layout with modest group padding. Avoid manual placement and fixed dimensions that create unused space. Keep arrows clear of labels and group titles.
 - Use one complete diagram for the workflow. Keep positions and scale stable between steps, reveal the selected path, and dim earlier items that are no longer relevant.
 

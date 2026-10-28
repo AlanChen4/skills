@@ -35,6 +35,7 @@ The folder must contain content.js and diagram.d2. Compilation writes diagram.sv
 - Missing choice IDs or labels and duplicate choice IDs within a step.
 - Steps that define both Next navigation and choices.
 - Missing diagram nodes or connections and duplicate connection references.
+- D2 person outlines stretched more than 20% from their natural width-to-height ratio, including their node IDs. This check recognizes the standard D2 person path; it does not inspect arbitrary icons or other shape types.
 
 Resolve reported errors before serving. These checks validate structure; they do not certify business accuracy or the absence of visual collisions. Check explanations against the implementation during authoring. Use automatic layout; browser review is not required. Do not add AST analysis or business execution adapters by default.
 

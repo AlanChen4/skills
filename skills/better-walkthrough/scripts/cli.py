@@ -62,10 +62,9 @@ def initialize(repo, name):
 SETUP = """Install the dependencies, then rerun --doctor:
 - Python 3.9 or newer: https://www.python.org/downloads/
 - A current Node.js LTS release: https://nodejs.org/en/download
-- D2: https://d2lang.com/tour/install/
+- D2 0.9.0 or newer, including bundled TALA: https://d2lang.com/tour/install/
 Put node and d2 on PATH. No npm or pip packages are required.
-Run d2 layout to list engines available in your installation.
-A diagram's layout-engine setting selects its engine unless --layout overrides it.
+Walkthroughs always use TALA with downward flow. No layout selection is needed.
 """
 
 
@@ -100,11 +99,11 @@ def check_dependencies():
 
 
 def compile_diagram(source, output):
-    command = ['d2', '--pad=24']
-    if layout:
-        command.extend(['--layout', layout])
-    command.extend([str(source), str(output)])
-    run_checked(command)
+    source = source.resolve()
+    # Keep relative imports based at the source folder; the final root setting wins.
+    text = source.read_text(encoding='utf-8') + '\ndirection: down\n'
+    run_checked(['d2', '--layout=tala', '--pad=24', '-', str(output.resolve())],
+                input=text, cwd=source.parent)
 
 
 def refresh_diagram():
@@ -197,7 +196,7 @@ def smoke_check(base, diagram):
 
 
 def main(argv=None):
-    global example, svg, rendered_source, layout, quiet_requests
+    global example, svg, rendered_source, quiet_requests
     quiet_requests = True
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''Examples:
@@ -216,7 +215,6 @@ select an available port automatically. No additional validator or HTTP calls ar
     parser.add_argument('--json', action='store_true', help='Print a machine-readable report (requires --check)')
     parser.add_argument('--doctor', action='store_true', help='Check dependencies and optionally compile a walkthrough without changing its files')
     parser.add_argument('--setup', action='store_true', help='Print dependency installation instructions')
-    parser.add_argument('--layout', help='Override the diagram layout engine (see d2 layout)')
     parser.add_argument('--init', action='store_true', help='Create .better-walkthrough/<name> with a self-ignoring .gitignore; print its path')
     parser.add_argument('--repo', type=Path, help='Source checkout (required with --init)')
     parser.add_argument('--name', help='Workflow name inside .better-walkthrough/')
@@ -242,7 +240,6 @@ select an available port automatically. No additional validator or HTTP calls ar
             _, args.walkthrough = workspace_path(args.repo, args.name)
         except ValueError as error:
             parser.exit(1, f'{error}\n')
-    layout = args.layout
     if args.setup:
         print(SETUP)
         return
@@ -261,8 +258,8 @@ select an available port automatically. No additional validator or HTTP calls ar
                     source.write_text('start -> finish\n', encoding='utf-8')
                 compile_diagram(source, Path(folder) / 'probe.svg')
         except RuntimeError as error:
-            parser.exit(1, f'{error}\nRun d2 layout to check available engines, or use --layout to choose one.\n')
-        print('Dependency and layout checks passed.')
+            parser.exit(1, f'{error}\nInstall D2 0.9.0 or newer with bundled TALA; run --setup for installation guidance.\n')
+        print('Dependency and TALA-down layout checks passed.')
         return
     if not args.walkthrough:
         parser.error('--walkthrough is required unless --doctor or --setup is used')
@@ -276,7 +273,7 @@ select an available port automatically. No additional validator or HTTP calls ar
         report = json.loads(run_checked(['node', str(ROOT / 'web/validate.js'), str(example / 'content.js'), '--json']))
         server = ThreadingHTTPServer(('127.0.0.1' if args.check else '0.0.0.0', 0 if args.check else args.port), Handler)
     except (OSError, RuntimeError) as error:
-        parser.exit(1, f'{error}\nCheck the diagram and content. Run --doctor --walkthrough <folder> to check its layout engine.\n')
+        parser.exit(1, f'{error}\nCheck the diagram and content. Run --doctor --walkthrough <folder> to check TALA support.\n')
     worker = Thread(target=server.serve_forever, daemon=True)
     worker.start()
     base = f'http://localhost:{server.server_port}/'

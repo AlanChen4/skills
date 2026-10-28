@@ -2,6 +2,13 @@
 
 Each walkthrough supplies content.js, diagram.d2, and generated diagram.svg. The web interface handles rendering and navigation. Content modules export trusted local JavaScript; they must not execute product code or call external services.
 
+Start diagram.d2 with the fixed layout below so standalone D2 exports match the CLI:
+
+```d2
+direction: down
+vars: {d2-config: {layout-engine: tala}}
+```
+
 Export an object from `content.js`:
 
 ```js

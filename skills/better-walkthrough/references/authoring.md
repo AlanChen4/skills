@@ -26,6 +26,7 @@ Store repository-relative source paths with the walkthrough. Step-level source r
 ## Draw
 
 - For complex flows, group related steps to show their relationships. Avoid basic grids.
+- Use TALA with `direction: down` for every walkthrough. The CLI enforces this layout; do not select another engine or flow direction.
 - Default to grouping by hosting provider (e.g. AWS, Google Cloud, Salesforce). Use another grouping when it explains the process better.
 - Name services and interfaces specifically (e.g. “Stripe Payments API” instead of “External service”).
 - Show each shared resource once. Label connections with operations (e.g. one inventory database with “Check stock” and “Reserve items” arrows).

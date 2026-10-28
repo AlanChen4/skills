@@ -29,13 +29,13 @@ Resolve reported errors before serving. These checks validate structure and HTTP
 
 ## Diagnose dependencies
 
-Use Python 3.9 or newer, a current Node.js LTS release, and D2 with the diagram's selected layout engine. No npm or pip packages are required by the runtime.
+Use Python 3.9 or newer, a current Node.js LTS release, and D2 0.9.0 or newer with bundled TALA. No npm or pip packages are required by the runtime. The CLI always compiles with TALA and downward flow, overriding layout settings in the source or environment. There is no layout parameter.
 
 ```sh
 python3 <skill-directory>/scripts/cli.py --doctor
 ```
 
-Use this diagnostic when dependencies fail; it is not required before `--check`. It probes the required Node.js features and compiles a temporary diagram. To check an existing diagram's selected engine without changing its files, add `--walkthrough <walkthrough-directory>`.
+Use this diagnostic when dependencies fail; it is not required before `--check`. It probes the required Node.js features and compiles a temporary diagram with TALA. To check an existing diagram without changing its files, add `--walkthrough <walkthrough-directory>`.
 
 If a dependency is missing, print setup instructions:
 
@@ -43,7 +43,7 @@ If a dependency is missing, print setup instructions:
 python3 <skill-directory>/scripts/cli.py --setup
 ```
 
-This command prints installation guidance from the official Python, Node.js, and D2 sites. It does not install software. Run `d2 layout` to list available engines. Use `--layout <name>` to explicitly override a diagram's selection; preserve its existing engine when updating a walkthrough unless a change is needed and explained.
+This command prints installation guidance from the official Python, Node.js, and D2 sites. It does not install software. D2 0.9.0 bundles TALA; no separate layout-engine installation is needed.
 
 ## Serve
 

@@ -11,7 +11,7 @@ A collection of agents skills to make more delightful software.
 
 ## Preview
 
-| Skill | In action |
+| Skill | |
 | --- | --- |
 | [better-clear-language](skills/better-clear-language/SKILL.md) | |
 | [better-codex-superfan](skills/better-codex-superfan/SKILL.md) | |

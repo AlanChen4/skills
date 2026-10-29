@@ -41,7 +41,20 @@ If D2 has several connections between the same endpoints, add `occurrence: 0` (o
 
 Existing `edges` arrays of decoded D2 connection IDs and numeric transition references remain supported. Named definitions may also use literal connection IDs for unusual D2 syntax.
 
-A step has either `next` or `choices`. Omit both for an end state. Choices have stable `id`, `label`, `summary`, `alternative`, `to`, and optional `edge`, `examples`, and `updates` fields. The viewer uses each choice `label` for both its button and its temporary edge label. Choices that share a route use one edge with separate labels and colored markers. Destination nodes stay hidden until reached. Omit `edge` only when the target step has the same `highlight`; the viewer draws a temporary self-loop only after that choice is selected. Choices that move to another node require an edge.
+A step has either `next` or `choices`. Omit both for an end state. Choices have stable `id`, `summary`, `alternative`, `to`, and optional `edge`, `label`, `examples`, and `updates` fields.
+
+For choices with an `edge`, the compiled D2 edge text supplies the button label. Omit `label` to avoid duplication; an explicit label must match the edge text or validation fails. Put scenario-specific conditions in `summary` or `examples`. Choices sharing a route share its label and colored marker. The viewer keeps the original edge text before and after selection, and hides destination nodes until reached.
+
+```js
+choices: [{
+  id: 'declined-card',
+  edge: 'paymentFailed', // D2 edge text: Payment declined
+  summary: 'The bank declined the card.',
+  to: 'payment-error',
+}]
+```
+
+Omit `edge` only when the target step has the same `highlight`; these choices require a `label`, which also labels their temporary self-loop after selection. Choices that move to another node require an edge.
 
 `alternative` completes “See what would've happened if…” at the end of a path.
 

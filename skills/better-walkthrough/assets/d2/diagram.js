@@ -1,4 +1,4 @@
-import {resolveConnections} from './connections.js';
+import {resolveConnections, bindChoiceLabels} from './connections.js';
 
 // D2 SVG groups encode their source IDs in the first CSS class.
 export function decodeId(className) {
@@ -12,12 +12,28 @@ export function diagramIds(svgText) {
   }
   return ids;
 }
+// D2 places connection text inside its encoded connection group.
+export function diagramLabels(svgText) {
+  const labels = new Map();
+  const decodeText = value => value.replace(/&#(x[0-9a-f]+|[0-9]+);/gi, (_, code) => String.fromCodePoint(code[0].toLowerCase() === 'x' ? parseInt(code.slice(1), 16) : Number(code)))
+    .replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&quot;', '"').replaceAll('&apos;', "'").replaceAll('&amp;', '&');
+  for (const match of svgText.matchAll(/<g\b[^>]*\bclass="([^"]+)"[^>]*>/g)) {
+    const id = decodeId(match[1]);
+    if (!id || !/\)\[\d+\]$/.test(id)) continue;
+    const end = svgText.indexOf('</g>', match.index + match[0].length);
+    const body = svgText.slice(match.index + match[0].length, end);
+    const text = [...body.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/g)]
+      .map(part => decodeText(part[1].replace(/<\/tspan>/g, ' ').replace(/<[^>]*>/g, ''))).join(' ').replace(/\s+/g, ' ').trim();
+    labels.set(id, text);
+  }
+  return labels;
+}
 export async function loadDiagram(url, container, content) {
   const response = await fetch(url, {cache: 'no-store'});
   if (!response.ok) throw new Error('Diagram loading failed');
   const text = await response.text();
   const ids = diagramIds(text);
-  content = resolveConnections(content, ids);
+  content = bindChoiceLabels(resolveConnections(content, ids), diagramLabels(text));
   const parsed = new DOMParser().parseFromString(text, 'image/svg+xml');
   if (parsed.querySelector('parsererror')) throw new Error('Invalid diagram');
   const svg = document.importNode(parsed.documentElement, true);
@@ -61,18 +77,15 @@ export async function loadDiagram(url, container, content) {
         element.setAttribute('aria-hidden', String(!visible));
         if (edgeIndex >= 0) {
           element.querySelector('.choice-edge-preview')?.remove();
-          const labels = [...element.querySelectorAll('text')];
-          for (const label of labels) label.style.visibility = '';
           if (upcoming) {
+            const label = element.querySelector('text');
             const path = element.querySelector('path.connection');
-            const box = labels[0]?.getBBox();
+            const box = label?.getBBox();
             const point = box ? {x: box.x, y: box.y + box.height / 2} : path?.getPointAtLength(path.getTotalLength() / 2);
             if (point) {
               const group = svgElement('g', {class: 'choice-edge-preview'});
-              previewEdges.filter(choice => choice.edge === edgeIndex).forEach((choice, index) => {
-                choiceLabel(group, choice, point.x, point.y + index * 24);
-              });
-              for (const label of labels) label.style.visibility = 'hidden';
+              group.append(svgElement('circle', {class: 'choice-edge-marker', cx: point.x - 10, cy: point.y,
+                r: 4, fill: previewEdges.find(choice => choice.edge === edgeIndex).color, 'aria-hidden': true}));
               element.append(group);
             }
           }

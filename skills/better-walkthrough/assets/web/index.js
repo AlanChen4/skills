@@ -242,7 +242,8 @@ function orderedChoices(choices) {
 }
 function choiceColors(choices) {
   const palette = ['#0072B2', '#D55E00', '#009E73', '#CC79A7', '#E69F00', '#56B4E9', '#332288', '#882255'];
-  return new Map(choices.map((choice, index) => [choice.id, palette[index % palette.length]]));
+  const routes = [...new Set(choices.map(choice => choice.edge ?? choice.id))];
+  return new Map(choices.map(choice => [choice.id, palette[routes.indexOf(choice.edge ?? choice.id) % palette.length]]));
 }
 $('toggle-all').onclick = () => { showAll = !showAll; drawDiagram(); saveProgress(); };
 $('back').onclick = () => { if (history.length > 1) { history.pop(); render(); } };

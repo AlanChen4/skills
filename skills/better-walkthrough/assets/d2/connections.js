@@ -27,3 +27,19 @@ export function resolveConnections(content, ids) {
     ...(step.choices ? {choices: step.choices.map(transition)} : {}),
   }))};
 }
+
+// The compiled diagram is the source of truth for labels on real edges.
+export function bindChoiceLabels(content, labels) {
+  const normalize = text => text.replaceAll('`', '').replace(/\s+/g, ' ').trim();
+  return {...content, steps: content.steps.map(step => ({...step,
+    ...(step.choices ? {choices: step.choices.map(choice => {
+      if (choice.edge === undefined) return choice;
+      const label = labels.get(content.edges[choice.edge]);
+      const path = `steps.${step.id}.choices.${choice.id}`;
+      if (!label) throw new Error(`${path}: choice edge needs a text label in diagram.d2.`);
+      if (choice.label !== undefined && (typeof choice.label !== 'string' || normalize(choice.label) !== normalize(label)))
+        throw new Error(`${path}.label: must match diagram edge text ${JSON.stringify(label)}. Omit label to use the edge text; put scenario details in summary or examples.`);
+      return {...choice, label};
+    })} : {}),
+  }))};
+}

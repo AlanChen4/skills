@@ -74,8 +74,8 @@ function renderChoices(step, snapshot) {
   const heading = document.createElement('p'); heading.id = 'choices-title'; heading.className = 'panel-label';
   heading.textContent = step.legend || 'What to explore next?'; fieldset.append(heading);
   fieldset.setAttribute('aria-labelledby', heading.id);
-  const columns = document.createElement('div'); columns.className = 'choice-columns';
-  fieldset.append(columns);
+  const list = document.createElement('div'); list.className = 'choice-list';
+  fieldset.append(list);
   for (const choice of step.choices) {
     const section = document.createElement('div');
     const data = document.createElement('div'); data.className = 'example-data';
@@ -91,7 +91,7 @@ function renderChoices(step, snapshot) {
     button.style.opacity = tried.has(choice.id) ? '0.5' : '1';
     button.dataset.choice = choice.id;
     button.onclick = () => { tried.add(choice.id); triedChoices.set(step.id, tried); go(choice); };
-    section.append(button); columns.append(section);
+    section.append(button); list.append(section);
   }
   $('choices').append(fieldset);
 }
@@ -144,7 +144,7 @@ function saveProgress() {
       showAll,
       decisions: [...decisions],
       triedChoices: [...triedChoices].map(([stage, choices]) => [stage, [...choices]]),
-      scroll: {step: $('step').scrollTop, choicesTop: $('choices').scrollTop, diagramTop: $('diagram-panel').scrollTop, diagramLeft: $('diagram-panel').scrollLeft},
+      scroll: {step: $('step').scrollTop, diagramTop: $('diagram-panel').scrollTop, diagramLeft: $('diagram-panel').scrollLeft},
     }));
   } catch { /* Continue normally if browser storage is unavailable. */ }
 }
@@ -217,7 +217,6 @@ function render() {
   }
   $('reasons').hidden = !$('reasons').childNodes.length;
   renderChoices(step, snapshot);
-  $('choices').scrollTop = 0;
   renderAlternatives();
   renderExploration();
   saveProgress();
@@ -253,7 +252,7 @@ $('restart').onclick = () => {
   render();
 };
 let scrollSave;
-for (const id of ['step', 'choices', 'diagram-panel']) {
+for (const id of ['step', 'diagram-panel']) {
   $(id).addEventListener('scroll', () => {
     clearTimeout(scrollSave);
     scrollSave = setTimeout(saveProgress, 100);
@@ -276,7 +275,6 @@ try {
   render();
   if (restoredScroll) {
     $('step').scrollTop = restoredScroll.step || 0;
-    $('choices').scrollTop = restoredScroll.choicesTop || 0;
     $('diagram-panel').scrollTop = restoredScroll.diagramTop || 0;
     $('diagram-panel').scrollLeft = restoredScroll.diagramLeft || 0;
     restoredScroll = null;

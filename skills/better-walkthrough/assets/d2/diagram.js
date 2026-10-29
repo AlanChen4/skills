@@ -35,8 +35,10 @@ export async function loadDiagram(url, container, content) {
   for (const element of svg.querySelectorAll('g[class]')) {
     const id = decodeId(element.getAttribute('class'));
     const edgeIndex = content.edges.indexOf(id);
-    const isNode = nodes.has(id), isProvider = providers.has(id);
-    if (edgeIndex < 0 && !isNode && !isProvider) continue;
+    const isProvider = providers.has(id);
+    const hasShape = Boolean(element.querySelector(':scope > .shape'));
+    const isNode = hasShape && !isProvider;
+    if (!id || (!hasShape && !element.querySelector(':scope > path.connection'))) continue;
     const shapes = [...element.querySelectorAll(':scope > .shape > *')].map(shape => ({shape, originalStyle: shape.getAttribute('style') || ''}));
     items.push({element, id, edgeIndex, isNode, isProvider, shapes});
     element.style.opacity = '0';

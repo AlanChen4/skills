@@ -18,7 +18,7 @@ export function advance(content, previous, transition) {
     activeEdge: transition.edge ?? previous.activeEdge, selectedChoice: transition.id ?? null};
 }
 export function validate(content, diagramIds) {
-  const errors = [];
+  const errors = validatePresentation(content);
   const steps = content.steps || [];
   const ids = new Set();
   for (const step of steps) {
@@ -59,5 +59,63 @@ export function validate(content, diagramIds) {
   };
   visit(content.start);
   for (const id of ids) if (!visited.has(id)) errors.push(`Unreachable step: ${id}`);
+  return errors;
+}
+
+// Check literal presentation values without executing state-dependent functions.
+export function validatePresentation(content) {
+  const errors = [];
+  const record = value => value !== null && typeof value === 'object' && !Array.isArray(value)
+    && Object.getPrototypeOf(value) === Object.prototype;
+  const fail = (path, expected) => errors.push(`${path}: expected ${expected}`);
+  function json(value, path, ancestors = new Set()) {
+    if (value === null || typeof value === 'string' || typeof value === 'boolean'
+      || typeof value === 'number' && Number.isFinite(value)) return;
+    if (!Array.isArray(value) && !record(value)) { fail(path, 'plain JSON data; move state functions to the outer examples field'); return; }
+    if (ancestors.has(value)) { fail(path, 'JSON data without circular references'); return; }
+    const next = new Set(ancestors).add(value);
+    if (Array.isArray(value)) {
+      for (let index = 0; index < value.length; index++) json(value[index], `${path}[${index}]`, next);
+    } else {
+      for (const [key, child] of Object.entries(value)) json(child, `${path}.${key}`, next);
+    }
+  }
+  function text(value, path) {
+    if (typeof value !== 'string') fail(path, 'text');
+  }
+  function texts(value, path) {
+    if (!Array.isArray(value)) { fail(path, 'an array of text'); return; }
+    value.forEach((entry, index) => text(entry, `${path}[${index}]`));
+  }
+  function examples(value, path) {
+    if (!Array.isArray(value)) { fail(path, 'an array of example objects, or a function returning that array'); return; }
+    value.forEach((example, index) => {
+      const at = `${path}[${index}]`;
+      if (!record(example)) { fail(at, 'an example object'); return; }
+      for (const key of ['text', 'disclosure']) if (Object.hasOwn(example, key)) text(example[key], `${at}.${key}`);
+      if (Object.hasOwn(example, 'paragraphs')) texts(example.paragraphs, `${at}.paragraphs`);
+      if (Object.hasOwn(example, 'data')) json(example.data, `${at}.data`);
+      if (Object.hasOwn(example, 'facts')) {
+        if (!record(example.facts)) fail(`${at}.facts`, 'a flat object of values; move state functions to the outer examples field');
+        else for (const [key, value] of Object.entries(example.facts)) {
+          if (value !== null && !['string','number','boolean'].includes(typeof value)
+            || typeof value === 'number' && !Number.isFinite(value)) fail(`${at}.facts.${key}`, 'text, a finite number, a boolean, or null');
+        }
+      }
+    });
+  }
+  function field(object, key, path, check) {
+    if (Object.hasOwn(object, key) && typeof object[key] !== 'function') check(object[key], `${path}.${key}`);
+  }
+  for (const step of content.steps || []) {
+    const path = `steps.${step.id}`;
+    for (const key of ['title','explanation']) field(step, key, path, text);
+    field(step, 'reasons', path, texts);
+    field(step, 'examples', path, examples);
+    for (const choice of step.choices || []) {
+      field(choice, 'summary', `${path}.choices.${choice.id}`, text);
+      field(choice, 'examples', `${path}.choices.${choice.id}`, examples);
+    }
+  }
   return errors;
 }

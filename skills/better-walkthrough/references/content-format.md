@@ -45,7 +45,7 @@ A step has either `next` or `choices`. Omit both for an end state. Choices have 
 
 `alternative` completes “See what would've happened if…” at the end of a path.
 
-`title`, `explanation`, `examples`, `reasons`, choice `summary`, and transition `updates` can be literal values or functions of the current state. Keep these functions pure. Return new state fields from `updates`; do not mutate history or call external services.
+`title`, `explanation`, `examples`, `reasons`, choice `summary`, and transition `updates` can be literal values or functions of the current state. Functions are supported only on these outer fields (and `when`), not inside example objects. Keep these functions pure. Return new state fields from `updates`; do not mutate history or call external services.
 
 For conditional navigation, `next` can be an array of transitions with `when: state => condition`. The first matching transition wins. Put an unconditional fallback last. Keep every target explicit so validation can inspect it without executing business logic.
 
@@ -54,6 +54,14 @@ Keep `explanation` brief. Put supporting points in `reasons`, which the interfac
 Wrap code references in backticks (e.g. `check_stock`) for inline code styling in narrative text. Other Markdown and HTML are rendered as plain text.
 
 Examples support `data` for JSON, `facts` for a two-column field/value table, `text`, and `paragraphs`. Use `facts` for flat values (e.g. `facts: {Target: 'r/catmakers', Schedule: '0 8 * * *'}`) and `data` for nested payloads or responses. Keep text short. Add `disclosure` to put content inside a native expandable section. The interface supplies gray containers.
+
+For state-dependent examples, return the whole array:
+
+```js
+examples: state => [{data: {account: state.account}}]
+```
+
+Do not use `examples: [{data: state => ...}]` or function-valued `facts`. Resolved examples contain plain values: `data` must be JSON-compatible; `facts` must be a flat object of text, finite numbers, booleans, or null; `paragraphs` must be an array of text. Static validation checks literal content without evaluating functions, so it cannot verify what a state-dependent function returns.
 
 Use a unique walkthrough `id`. Saved progress uses that ID unless `storageKey` is supplied. Keep IDs, storage keys, and connection order unchanged when moving files to preserve progress at the same viewer origin. Change the storage key when state changes are incompatible.
 

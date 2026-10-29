@@ -1,3 +1,5 @@
+import {connectionEndpoints} from '../d2/connections.js';
+
 // Pure helpers shared by the browser and command-line validation.
 export const resolve = (value, state) => typeof value === 'function' ? value(state) : value;
 export const nextTransition = (step, state) => {
@@ -15,7 +17,7 @@ export function advance(content, previous, transition) {
   if (transition.edge !== undefined && !edges.includes(transition.edge)) edges.push(transition.edge);
   return {...previous, ...resolve(transition.updates || {}, previous), stage: step.id,
     nodes: [...new Set([...previous.nodes, step.highlight])], edges,
-    activeEdge: transition.edge ?? previous.activeEdge, selectedChoice: transition.id ?? null};
+    activeEdge: transition.edge ?? previous.activeEdge};
 }
 export function validate(content, diagramIds) {
   const errors = validatePresentation(content);
@@ -41,10 +43,13 @@ export function validate(content, diagramIds) {
       if (!choice.id || typeof choice.label !== 'string' || !choice.label.trim()) errors.push(`${step.id}: choices need IDs and labels`);
     }
     for (const choice of choices) {
-      const target = steps.find(target => target.id === choice.to);
-      if (choice.edge === undefined && target && target.highlight !== step.highlight) errors.push(`${step.id}: choice ${choice.id} moves to ${target.highlight}; provide a diagram edge. Only choices that stay on the same node can use a temporary self-loop.`);
+      if (choice.edge === undefined) errors.push(`${step.id}: choice ${choice.id} needs a real diagram edge. Same-node explanations use Next without an edge; real loops require an explicit D2 self-edge.`);
     }
     for (const transition of transitions) {
+      const target = steps.find(target => target.id === transition.to);
+      const endpoints = connectionEndpoints(edges[transition.edge]);
+      if (endpoints && target && (endpoints.from !== step.highlight || endpoints.to !== target.highlight)) errors.push(`${step.id}: connection for ${transition.id || transition.to} must run from ${step.highlight} to ${target.highlight}; it runs from ${endpoints.from} to ${endpoints.to}.`);
+      if (transition.edge === undefined && target && target.highlight !== step.highlight) errors.push(`${step.id}: moving to ${target.highlight} needs a diagram edge.`);
       if (!ids.has(transition.to)) errors.push(`${step.id}: unknown target ${transition.to}`);
       if (transition.edge !== undefined && (!Number.isInteger(transition.edge) || !edges[transition.edge])) errors.push(`${step.id}: unknown connection ${transition.edge}`);
     }

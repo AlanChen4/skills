@@ -41,7 +41,7 @@ If D2 has several connections between the same endpoints, add `occurrence: 0` (o
 
 Existing `edges` arrays of decoded D2 connection IDs and numeric transition references remain supported. Named definitions may also use literal connection IDs for unusual D2 syntax.
 
-A step has either `next` or `choices`. Omit both for an end state. Choices have stable `id`, `summary`, `alternative`, `to`, and optional `edge`, `label`, `examples`, and `updates` fields.
+A step has either `next` or `choices`. Omit both for an end state. Choices have stable `id`, `summary`, `alternative`, `to`, and a required `edge`. The `label`, `examples`, and `updates` fields are optional.
 
 For choices with an `edge`, the compiled D2 edge text supplies the button label. Omit `label` to avoid duplication; an explicit label must match the edge text or validation fails. Put scenario-specific conditions in `summary` or `examples`. Choices sharing a route share its label and colored marker. The viewer keeps the original edge text before and after selection, and hides destination nodes until reached.
 
@@ -54,7 +54,7 @@ choices: [{
 }]
 ```
 
-Omit `edge` only when the target step has the same `highlight`; these choices require a `label`, which also labels their temporary self-loop after selection. Choices that move to another node require an edge.
+Every choice requires a real D2 edge whose endpoints match the current and target highlights. A loop must reference an explicit self-edge in diagram.d2. For another explanation on the same node, use `next` without an edge; it advances the text without drawing a loop. Moving to another node always requires an edge.
 
 `alternative` completes “See what would've happened if…” at the end of a path.
 

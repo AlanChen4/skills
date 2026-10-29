@@ -7,6 +7,15 @@ const personRatio = 68.3 / 77.4;
 
 export function validateGeometry(svg) {
   const errors = [];
+  const root = svg.match(/<svg\b[^>]*>/)?.[0] || '';
+  const viewBox = root.match(/\bviewBox="([^"]+)"/)?.[1].trim().split(/[\s,]+/).map(Number);
+  if (viewBox?.length === 4) {
+    const [width, height] = viewBox.slice(2);
+    const shorter = Math.min(width, height), longer = Math.max(width, height);
+    if (Number.isFinite(longer) && shorter >= 1000 && longer > shorter * 5) {
+      errors.push(`Diagram is too stretched (${width} × ${height}; ratio ${(longer / shorter).toFixed(2)}:1). When the shorter dimension is at least 1000, the longer dimension must be at most 5 times it. Group shared destinations onto one edge and simplify the graph before rendering again.`);
+    }
+  }
   const groups = [];
   for (const match of svg.matchAll(/<g\b[^>]*>|<\/g\s*>|<path\b[^>]*>/g)) {
     const tag = match[0];

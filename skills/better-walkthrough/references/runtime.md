@@ -10,11 +10,11 @@ Create a [local walkthrough folder](workspaces.md) and write its [content and di
 python3 <skill-directory>/scripts/cli.py --walkthrough <walkthrough-directory> --check
 ```
 
-This command checks dependencies, compiles D2, validates navigation and diagram references, checks person-shape proportions, and checks viewer HTTP routes. Its temporary local server stops before the command exits.
+This command checks dependencies, compiles D2, validates navigation and diagram references, checks person-shape proportions and overall diagram proportions, and checks viewer HTTP routes. Its temporary local server stops before the command exits.
 
 Add `--json` for a machine-readable report (check only). Use `--help` for examples and exit codes.
 
-Compilation writes diagram.svg beside content.js and diagram.d2. The proportion check covers standard D2 person shapes, not arbitrary icons.
+Compilation writes diagram.svg beside content.js and diagram.d2. The proportion check covers standard D2 person shapes, not arbitrary icons. Overall SVG dimensions come from the root `viewBox`: when the shorter side is at least 1,000 units, the longer side must be at most five times it.
 
 These checks do not certify business accuracy, browser execution, or the absence of visual collisions. Browser review is not required.
 

@@ -11,12 +11,32 @@ A collection of agents skills to make more delightful software.
 
 ## Preview
 
-| Skill | |
-| --- | --- |
-| [better-clear-language](skills/better-clear-language/SKILL.md) | |
-| [better-codex-superfan](skills/better-codex-superfan/SKILL.md) | |
-| [better-one-by-one](skills/better-one-by-one/SKILL.md) | |
-| [better-walkthrough](skills/better-walkthrough/SKILL.md) | ![Interactive code walkthrough with branching scenarios](assets/better-walkthrough.gif) |
+<table width="100%">
+  <thead>
+    <tr>
+      <th width="50%">Skill</th>
+      <th width="50%"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="skills/better-clear-language/SKILL.md">better-clear-language</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><a href="skills/better-codex-superfan/SKILL.md">better-codex-superfan</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><a href="skills/better-one-by-one/SKILL.md">better-one-by-one</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><a href="skills/better-walkthrough/SKILL.md">better-walkthrough</a></td>
+      <td><img src="assets/better-walkthrough.gif" alt="Interactive code walkthrough with branching scenarios" width="100%"></td>
+    </tr>
+  </tbody>
+</table>
 
 ## Install
 

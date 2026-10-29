@@ -9,6 +9,15 @@ A collection of agents skills to make more delightful software.
 - [**better-one-by-one**](skills/better-one-by-one/SKILL.md): Work through mentioned issues/tasks one by one, with progress tracker.
 - [**better-walkthrough**](skills/better-walkthrough/SKILL.md): Use [D2 diagrams](https://d2lang.com/) to walk through code logic step-by-step.
 
+## Preview
+
+| Skill | In action |
+| --- | --- |
+| [better-clear-language](skills/better-clear-language/SKILL.md) | |
+| [better-codex-superfan](skills/better-codex-superfan/SKILL.md) | |
+| [better-one-by-one](skills/better-one-by-one/SKILL.md) | |
+| [better-walkthrough](skills/better-walkthrough/SKILL.md) | |
+
 ## Install
 
 ```sh

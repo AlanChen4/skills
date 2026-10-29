@@ -27,7 +27,7 @@ npx skills add AlanChen4/skills -g
   <tbody>
     <tr>
       <td><a href="skills/better-clear-language/SKILL.md">better-clear-language</a></td>
-      <td>These skills give coding agents instructions for specific tasks. This description uses <strong>better-clear-language</strong>, which helps agents write with common words and clear, active sentences. The skill checks for vague wording and removes filler while preserving the meaning. (GPT 6.1 Sol, Medium)</td>
+      <td>"The purpose of this repo is to give coding agents instructions for specific tasks. This description uses better-clear-language, which helps agents write with common words and clear, active sentences. The skill checks for vague wording and removes filler while preserving the meaning."<br>- (GPT 6.1 Sol, Medium)</td>
     </tr>
     <tr>
       <td><a href="skills/better-codex-superfan/SKILL.md">better-codex-superfan</a></td>

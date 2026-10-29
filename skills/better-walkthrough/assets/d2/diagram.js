@@ -61,12 +61,19 @@ export async function loadDiagram(url, container, content) {
     element.style.pointerEvents = 'none';
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) element.style.transition = 'opacity 200ms';
   }
+  // Reuse D2's edge masks so clearance stays transparent on any background.
+  const masks = new Map([...svg.querySelectorAll('mask[id]')].map(mask => [mask.id, mask]));
+  const edgeMasks = new Set([...svg.querySelectorAll('path.connection')].map(path => {
+    const id = path.getAttribute('mask')?.match(/^url\(#(.+)\)$/)?.[1];
+    return masks.get(id);
+  }).filter(Boolean));
   container.replaceChildren(svg);
   return {
     ids,
     content,
     draw(state, current, title, showAll = false, previewEdges = []) {
       svg.setAttribute('aria-label', title);
+      svg.querySelectorAll('.choice-label-clearance').forEach(rect => rect.remove());
       for (const {element, id, edgeIndex, isNode, isProvider, shapes} of items) {
         const upcoming = edgeIndex >= 0 && previewEdges.some(choice => choice.edge === edgeIndex);
         const visible = showAll || upcoming || (isProvider ? state.nodes.some(node => node.startsWith(id + '.')) : isNode ? state.nodes.includes(id) : state.edges.includes(edgeIndex));
@@ -82,6 +89,10 @@ export async function loadDiagram(url, container, content) {
             const box = label?.getBBox();
             const point = box ? {x: box.x, y: box.y + box.height / 2} : path?.getPointAtLength(path.getTotalLength() / 2);
             if (point) {
+              if (box) for (const mask of edgeMasks) mask.append(svgElement('rect', {
+                class: 'choice-label-clearance', x: box.x - 18, y: box.y - 4,
+                width: box.width + 22, height: box.height + 8, fill: 'black',
+              }));
               const group = svgElement('g', {class: 'choice-edge-preview'});
               group.append(svgElement('circle', {class: 'choice-edge-marker', cx: point.x - 10, cy: point.y,
                 r: 4, fill: previewEdges.find(choice => choice.edge === edgeIndex).color, 'aria-hidden': true}));

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Better Clear Language"
+  short_description: "Write precise, readable text for spoken use"
+  default_prompt: "Use $better-clear-language to rewrite this text in clear, direct English."

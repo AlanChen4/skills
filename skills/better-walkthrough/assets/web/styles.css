@@ -1,0 +1,96 @@
+  main {
+    position: relative;
+    height: calc(100dvh - 16px);
+  }
+  .panel {
+    border: 1px solid;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+  .panel-label { margin: 0; }
+  #sidebar {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 1;
+    width: min(384px, 42vw);
+    max-width: calc(100% - 24px);
+    max-height: calc(100% - 24px);
+    background: white;
+    min-height: 0;
+    min-width: 0;
+  }
+  .sidebar-heading { display: flex; align-items: baseline; gap: 8px; }
+  .sidebar-heading h2 { flex: 1; min-width: 0; margin-top: 0; font-size: 1em; }
+  #minimize { flex: none; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; line-height: 1; }
+  #sidebar[data-minimized="true"] #step > :not(.sidebar-heading),
+  #sidebar[data-minimized="true"] #title { display: none; }
+  #sidebar[data-minimized="true"] { width: auto; border: 0; padding: 0; background: transparent; }
+  #sidebar[data-minimized="true"] > nav { display: none; }
+  #sidebar nav {
+    padding-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+  }
+  #back { grid-column: 1; justify-self: start; }
+  #next { grid-column: 3; justify-self: end; }
+  #restart { grid-column: 3; justify-self: end; }
+  #explored { grid-column: 2; white-space: nowrap; }
+  #explored[data-complete="true"] { color: green; }
+  #step, #diagram-panel { overflow: auto; min-width: 0; }
+  #diagram-area { height: 100%; position: relative; min-width: 0; min-height: 0; }
+  #choices { margin-block: 12px; min-width: 0; }
+  #choices:empty { display: none; }
+  #choices fieldset { margin: 0; min-width: 0; }
+  #diagram-panel { height: 100%; overflow: hidden; position: relative; cursor: grab; touch-action: none; }
+  #diagram-panel { scrollbar-width: none; }
+  #diagram-panel::-webkit-scrollbar { display: none; }
+  .pan-scrollbar { position: absolute; pointer-events: none; opacity: 0; background: #0001; transition: opacity 180ms ease-out; }
+  .pan-scrollbar, .pan-scrollbar span { border-radius: 3px; }
+  .pan-scrollbar span { position: absolute; background: #6669; }
+  .pan-scrollbar.horizontal { left: 12px; right: 12px; bottom: 5px; height: 3px; }
+  .pan-scrollbar.horizontal span { height: 100%; }
+  .pan-scrollbar.vertical { top: 12px; bottom: 12px; right: 5px; width: 3px; }
+  .pan-scrollbar.vertical span { width: 100%; }
+  #diagram-area:has(#diagram-panel.mouse-dragging) .pan-scrollbar:not([hidden]) { opacity: 1; }
+  #diagram-panel.dragging { cursor: grabbing; user-select: none; }
+  #diagram-status:empty { display: none; }
+  #diagram { position: absolute; inset: 0; transform-origin: 0 0; will-change: transform; }
+  #diagram > svg { display: block; max-width: none; }
+  #zoom-controls { position: absolute; right: 20px; bottom: 20px; display: flex; gap: 4px; }
+  #step, #choices { overflow-wrap: anywhere; --code-background: #f2f2f2; --code-border: #d8d8d8; }
+  #step pre, #choices pre { white-space: pre-wrap; }
+  #step code, #choices code {
+    background: var(--code-background);
+    border: 1px solid var(--code-border);
+    border-radius: 3px;
+    padding: 0.1em 0.25em;
+  }
+  #data:not(:empty), .example-data {
+    background: var(--code-background);
+    border: 1px solid var(--code-border);
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    padding: 8px;
+    margin-block: 12px;
+  }
+  #data > :first-child, .example-data > :first-child { margin-top: 0; }
+  #data > :last-child, .example-data > :last-child { margin-bottom: 0; }
+  .example-label { display: block; color: #666; margin-bottom: 6px; }
+  .example-facts { width: 100%; table-layout: fixed; border-collapse: collapse; }
+  .example-facts th, .example-facts td { text-align: left; vertical-align: top; padding: 4px; }
+  .example-facts th { width: 40%; }
+  .choice-dot { display: inline-block; width: 0.65em; height: 0.65em; border-radius: 50%; margin-right: 0.4em; }
+
+  .choice-list { display: grid; gap: 12px; }
+  .choice-list > div { min-width: 0; }
+  .choice-list button { text-align: left; max-width: 100%; overflow-wrap: anywhere; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pan-scrollbar { transition: none; }
+  }

@@ -76,7 +76,7 @@ function renderChoices(step, snapshot) {
   fieldset.setAttribute('aria-labelledby', heading.id);
   const list = document.createElement('div'); list.className = 'choice-list';
   fieldset.append(list);
-  for (const choice of step.choices) {
+  for (const choice of orderedChoices(step.choices)) {
     const section = document.createElement('div');
     const data = document.createElement('div'); data.className = 'example-data';
     if (choice.summary) paragraph(data, resolve(choice.summary, snapshot));
@@ -233,6 +233,12 @@ function drawDiagram() {
   diagram?.draw(state(), step.highlight, $('title').textContent, showAll, previewEdges, loops);
   $('toggle-all').setAttribute('aria-pressed', String(showAll));
   $('toggle-all').title = showAll ? 'Show only the explored path' : 'Show the complete diagram';
+}
+function orderedChoices(choices) {
+  const counts = new Map();
+  for (const choice of choices) if (choice.edge !== undefined) counts.set(choice.edge, (counts.get(choice.edge) || 0) + 1);
+  const rank = choice => choice.edge === undefined ? 2 : counts.get(choice.edge) > 1 ? 1 : 0;
+  return [...choices].sort((a, b) => rank(a) - rank(b));
 }
 function choiceColors(choices) {
   const palette = ['#0072B2', '#D55E00', '#009E73', '#CC79A7', '#E69F00', '#56B4E9', '#332288', '#882255'];

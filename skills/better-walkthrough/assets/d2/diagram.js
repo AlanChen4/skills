@@ -61,17 +61,20 @@ export async function loadDiagram(url, container, content) {
         element.setAttribute('aria-hidden', String(!visible));
         if (edgeIndex >= 0) {
           element.querySelector('.choice-edge-preview')?.remove();
+          const path = element.querySelector('path.connection');
+          if (path) path.style.visibility = '';
           const labels = [...element.querySelectorAll('text')];
           for (const label of labels) label.style.visibility = '';
           if (upcoming) {
-            const path = element.querySelector('path.connection');
             const box = labels[0]?.getBBox();
             const point = box ? {x: box.x, y: box.y + box.height / 2} : path?.getPointAtLength(path.getTotalLength() / 2);
             if (point) {
               const group = svgElement('g', {class: 'choice-edge-preview'});
-              previewEdges.filter(choice => choice.edge === edgeIndex).forEach((choice, index) => {
-                choiceLabel(group, choice, point.x, point.y + index * 24);
-              });
+              const choices = previewEdges.filter(choice => choice.edge === edgeIndex);
+              if (choices.length > 1 && path) {
+                choiceBranches(group, path, choices, svg);
+                path.style.visibility = 'hidden';
+              } else choiceLabel(group, choices[0], point.x, point.y);
               for (const label of labels) label.style.visibility = 'hidden';
               element.append(group);
             }
@@ -120,4 +123,24 @@ function choiceLabel(group, choice, x, y) {
     'paint-order': 'stroke', stroke: 'white', 'stroke-width': 4, 'stroke-linejoin': 'round'});
   label.textContent = choice.label;
   group.append(svgElement('circle', {class: 'choice-edge-marker', cx: x - 10, cy: y, r: 4, fill: choice.color, 'aria-hidden': true}), label);
+}
+
+// Fan scenarios sharing a D2 route into separate temporary choice arrows.
+function choiceBranches(group, path, choices, svg) {
+  const start = path.getPointAtLength(0);
+  const bounds = (svg.querySelector('svg.d2-svg') || svg).viewBox.baseVal;
+  const right = start.x + 420 < bounds.x + bounds.width;
+  const endX = start.x + (right ? 120 : -120);
+  choices.forEach((choice, index) => {
+    const endY = start.y + 60 + index * 52;
+    const bendX = start.x + (right ? 40 : -40);
+    group.append(svgElement('path', {class: 'choice-branch',
+      d: `M ${start.x} ${start.y} Q ${bendX} ${start.y} ${bendX} ${start.y + 24} V ${endY - 12} Q ${bendX} ${endY} ${bendX + (right ? 12 : -12)} ${endY} H ${endX}`,
+      fill: 'none', stroke: choice.color, 'stroke-width': 2,
+    }));
+    const back = endX + (right ? -8 : 8);
+    group.append(svgElement('path', {d: `M ${back} ${endY - 5} L ${endX} ${endY} L ${back} ${endY + 5}`,
+      fill: 'none', stroke: choice.color, 'stroke-width': 2}));
+    choiceLabel(group, choice, right ? endX + 18 : endX - 280, endY);
+  });
 }

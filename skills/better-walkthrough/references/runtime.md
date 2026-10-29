@@ -20,7 +20,7 @@ These checks do not certify business accuracy, browser execution, or the absence
 
 ## Diagnose dependencies
 
-Use Python 3.9 or newer, a current Node.js LTS release, and D2 0.9.0 or newer with bundled TALA. No npm or pip packages are required by the runtime. The CLI always compiles with TALA and downward flow, overriding layout settings in the source or environment. There is no layout parameter.
+Use Python 3.9 or newer, a current Node.js LTS release, and D2 0.9.0 or newer with bundled TALA. No npm or pip packages are required by the runtime. The CLI always compiles with TALA and downward flow, overriding layout settings in the source or environment. There is no layout parameter. All diagram text uses 24px regular type, with bold and italic disabled before layout.
 
 ```sh
 python3 <skill-directory>/scripts/cli.py --doctor

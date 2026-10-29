@@ -102,6 +102,10 @@ def compile_diagram(source, output):
     source = source.resolve()
     # Keep relative imports based at the source folder; the final root setting wins.
     text = source.read_text(encoding='utf-8') + '\ndirection: down\n'
+    # Apply typography before layout so labels receive enough space.
+    for selector in ['***', *[f'(*** {arrow} ***)[*]' for arrow in ['->', '<-', '<->', '--']]]:
+        for key, value in [('font-size', '24'), ('bold', 'false'), ('italic', 'false')]:
+            text += f'{selector}.style.{key}: {value}\n'
     run_checked(['d2', '--layout=tala', '--pad=24', '-', str(output.resolve())],
                 input=text, cwd=source.parent)
 

@@ -16,7 +16,7 @@ A collection of agents skills to make more delightful software.
 | [better-clear-language](skills/better-clear-language/SKILL.md) | |
 | [better-codex-superfan](skills/better-codex-superfan/SKILL.md) | |
 | [better-one-by-one](skills/better-one-by-one/SKILL.md) | |
-| [better-walkthrough](skills/better-walkthrough/SKILL.md) | |
+| [better-walkthrough](skills/better-walkthrough/SKILL.md) | ![Interactive code walkthrough with branching scenarios](assets/better-walkthrough.gif) |
 
 ## Install
 

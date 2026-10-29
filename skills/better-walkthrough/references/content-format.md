@@ -54,7 +54,7 @@ choices: [{
 }]
 ```
 
-Every choice requires a real D2 edge whose endpoints match the current and target highlights. A loop must reference an explicit self-edge in diagram.d2. For another explanation on the same node, use `next` without an edge; it advances the text without drawing a loop. Moving to another node always requires an edge.
+Every choice requires a real D2 edge whose endpoints match the current and target highlights. A loop must reference an explicit self-edge in diagram.d2. Every transition, including `next`, requires a real edge matching its current and target highlights. Merge extra explanation into an existing step instead of creating a text-only transition.
 
 `alternative` completes “See what would've happened if…” at the end of a path.
 

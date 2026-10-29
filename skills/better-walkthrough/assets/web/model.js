@@ -34,6 +34,7 @@ export function validate(content, diagramIds) {
     if (!diagramIds.has(edge)) errors.push(`Missing diagram connection: ${edge}`);
   }
   for (const step of steps) {
+    if (connectionEndpoints(step.highlight)) errors.push(`${step.id}: highlight must reference a diagram node, not an edge.`);
     if (!diagramIds.has(step.highlight)) errors.push(`${step.id}: missing diagram node ${step.highlight}`);
     if (step.next && step.choices?.length) errors.push(`${step.id}: use Next or choices, not both`);
     const choices = step.choices || [];
@@ -43,13 +44,13 @@ export function validate(content, diagramIds) {
       if (!choice.id || typeof choice.label !== 'string' || !choice.label.trim()) errors.push(`${step.id}: choices need IDs and labels`);
     }
     for (const choice of choices) {
-      if (choice.edge === undefined) errors.push(`${step.id}: choice ${choice.id} needs a real diagram edge. Same-node explanations use Next without an edge; real loops require an explicit D2 self-edge.`);
+      if (choice.edge === undefined) errors.push(`${step.id}: choice ${choice.id} needs a real diagram edge. Fold same-node explanations into an existing step; real loops require an explicit D2 self-edge.`);
     }
     for (const transition of transitions) {
       const target = steps.find(target => target.id === transition.to);
       const endpoints = connectionEndpoints(edges[transition.edge]);
       if (endpoints && target && (endpoints.from !== step.highlight || endpoints.to !== target.highlight)) errors.push(`${step.id}: connection for ${transition.id || transition.to} must run from ${step.highlight} to ${target.highlight}; it runs from ${endpoints.from} to ${endpoints.to}.`);
-      if (transition.edge === undefined && target && target.highlight !== step.highlight) errors.push(`${step.id}: moving to ${target.highlight} needs a diagram edge.`);
+      if (transition.edge === undefined) errors.push(`${step.id}: transition to ${transition.to} needs a diagram edge. Merge text-only steps into an existing step, or add the actual operation to the diagram.`);
       if (!ids.has(transition.to)) errors.push(`${step.id}: unknown target ${transition.to}`);
       if (transition.edge !== undefined && (!Number.isInteger(transition.edge) || !edges[transition.edge])) errors.push(`${step.id}: unknown connection ${transition.edge}`);
     }

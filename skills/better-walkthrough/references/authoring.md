@@ -25,6 +25,7 @@ State unknowns, such as third-party behavior absent from the source. Do not impl
 
 ## Draw
 
+- Map every step to the specific process, decision, or resource it explains. Show each operation on the diagram and label its edge with the action (e.g. “Start job” or “Read report history”). Merge text-only steps that add no diagram transition. Reuse shared resources, but distinguish the processes that use them. Let the diagram carry the action; use prose for conditions, reasons, and examples.
 - For complex flows, group related steps to show their relationships. Avoid basic grids.
 - Default to grouping by hosting provider (e.g. AWS, Google Cloud, Salesforce). Use another grouping when it explains the process better.
 - Name services and interfaces specifically (e.g. “Stripe Payments API” instead of “External service”).

@@ -2,9 +2,9 @@ import {readFile} from 'node:fs/promises';
 import {resolve as pathResolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {validate} from './model.js';
-import {diagramIds, diagramLabels} from '../d2/diagram.js';
-import {validateGeometry} from '../d2/geometry.js';
-import {resolveConnections, bindChoiceLabels} from '../d2/connections.js';
+import {diagramIds, diagramLabels} from './d2/diagram.js';
+import {validateGeometry} from './d2/geometry.js';
+import {resolveConnections, bindChoiceLabels} from './d2/connections.js';
 
 if (!process.argv[2]) {
   console.error('Usage: node validate.js /path/to/walkthrough/content.js');

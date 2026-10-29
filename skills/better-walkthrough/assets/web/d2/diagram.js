@@ -1,6 +1,7 @@
 import {resolveConnections, bindChoiceLabels, connectionEndpoints} from './connections.js';
 
 // D2 SVG groups encode their source IDs in the first CSS class.
+// Decode this format as data only; the result is never evaluated as code.
 export function decodeId(className) {
   try { return atob(className.split(' ')[0]).replaceAll('&gt;', '>').replaceAll('&lt;', '<').replaceAll('&amp;', '&'); } catch { return null; }
 }
@@ -29,7 +30,7 @@ export function diagramLabels(svgText) {
   return labels;
 }
 export async function loadDiagram(url, container, content) {
-  const response = await fetch(url, {cache: 'no-store'});
+  const response = await fetch(url, {cache: 'no-store', mode: 'same-origin', redirect: 'error'});
   if (!response.ok) throw new Error('Diagram loading failed');
   const text = await response.text();
   const ids = diagramIds(text);

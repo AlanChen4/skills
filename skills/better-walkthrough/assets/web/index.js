@@ -1,10 +1,11 @@
 import {resolve, nextTransition, initialState, advance, validate} from './model.js';
-import {loadDiagram} from '../d2/diagram.js';
+import {loadDiagram} from './d2/diagram.js';
 import {attachViewport} from './viewport.js';
 
 const $ = id => document.getElementById(id);
-const config = await (await fetch('/__config')).json();
+const config = await (await fetch('/__config', {mode: 'same-origin', redirect: 'error'})).json();
 const contentUrl = new URL(config.content, location.href);
+if (contentUrl.origin !== location.origin) throw new Error('Content must use the viewer origin');
 let {default: content} = await import(contentUrl.href);
 document.title = content.title;
 const node = Object.fromEntries(content.steps.map(step => [step.id, step.highlight]));
@@ -183,7 +184,7 @@ async function watchChanges() {
   let revision;
   const poll = async () => {
     try {
-      const response = await fetch('__version', {cache: 'no-store'});
+      const response = await fetch('/__version', {cache: 'no-store', mode: 'same-origin', redirect: 'error'});
       if (response.ok) {
         const nextRevision = (await response.json()).revision;
         if (revision && nextRevision !== revision) {

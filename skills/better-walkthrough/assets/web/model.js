@@ -1,4 +1,4 @@
-import {connectionEndpoints} from '../d2/connections.js';
+import {connectionEndpoints} from './d2/connections.js';
 
 // Pure helpers shared by the browser and command-line validation.
 export const resolve = (value, state) => typeof value === 'function' ? value(state) : value;

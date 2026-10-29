@@ -19,6 +19,14 @@ render_lock = Lock()
 rendered_source = None
 
 
+def run_process(command, *, timeout=30, **kwargs):
+    """Run only the runtime's tools, with literal arguments and no shell."""
+    if not isinstance(command, list) or not command or command[0] not in {'git', 'node', 'd2'}:
+        raise ValueError('Only Git, Node.js, and D2 commands are supported.')
+    return subprocess.run(command, capture_output=True, text=True, timeout=timeout,
+                          shell=False, **kwargs)
+
+
 def workspace_path(repo, name):
     if not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,63}', name):
         raise ValueError('Use a workflow name of up to 64 lowercase letters, digits, or hyphens.')
@@ -26,8 +34,8 @@ def workspace_path(repo, name):
     if not repo.is_dir():
         raise ValueError('The source repository must be an existing directory.')
     try:
-        result = subprocess.run(['git', '-C', str(repo), 'rev-parse', '--show-toplevel'],
-            capture_output=True, text=True, timeout=5, env={**os.environ, 'GIT_OPTIONAL_LOCKS': '0'})
+        result = run_process(['git', '-C', str(repo), 'rev-parse', '--show-toplevel'],
+            timeout=5, env={**os.environ, 'GIT_OPTIONAL_LOCKS': '0'})
         if result.returncode == 0:
             repo = Path(result.stdout.strip()).resolve()
     except (OSError, subprocess.TimeoutExpired):
@@ -42,8 +50,8 @@ def workspace_path(repo, name):
 def initialize(repo, name):
     root, folder = workspace_path(repo, name)
     try:
-        tracked = subprocess.run(['git', '-C', str(root.parent), 'ls-files', '--', '.better-walkthrough'],
-            capture_output=True, text=True, timeout=5, env={**os.environ, 'GIT_OPTIONAL_LOCKS': '0'})
+        tracked = run_process(['git', '-C', str(root.parent), 'ls-files', '--', '.better-walkthrough'],
+            timeout=5, env={**os.environ, 'GIT_OPTIONAL_LOCKS': '0'})
         if tracked.returncode == 0 and tracked.stdout.strip():
             raise ValueError('.better-walkthrough contains tracked files. Choose a checkout without tracked walkthrough artifacts.')
     except (OSError, subprocess.TimeoutExpired):
@@ -70,7 +78,7 @@ Walkthroughs always use TALA with downward flow. No layout selection is needed.
 
 def run_checked(command, **kwargs):
     try:
-        result = subprocess.run(command, capture_output=True, text=True, timeout=30, **kwargs)
+        result = run_process(command, **kwargs)
     except (OSError, subprocess.TimeoutExpired) as error:
         raise RuntimeError(f'Could not run {command[0]}: {error}') from error
     if result.returncode:
@@ -90,7 +98,7 @@ def check_dependencies():
     # Check the features actually used, including .js module syntax detection.
     with tempfile.TemporaryDirectory(prefix='better-walkthrough-dependencies-') as folder:
         probe = Path(folder) / 'probe.js'
-        probe.write_text("export {}; if (!Object.hasOwn({a: 1}, 'a') || atob('YQ==') !== 'a' || [1].at(-1) !== 1) process.exit(1);", encoding='utf-8')
+        probe.write_text("export {}; if (!Object.hasOwn({a: 1}, 'a') || [1].at(-1) !== 1) process.exit(1);", encoding='utf-8')
         try:
             run_checked(['node', str(probe)])
         except RuntimeError as error:
@@ -115,7 +123,7 @@ def refresh_diagram():
     with render_lock:
         # Include shared D2 imports when checking for changes.
         digest = sha256()
-        for path in sorted([*example.rglob('*.d2'), *(ROOT / 'd2').rglob('*.d2')]):
+        for path in sorted([*example.rglob('*.d2'), *(ROOT / 'web/d2').rglob('*.d2')]):
             digest.update(str(path).encode())
             digest.update(path.read_bytes())
         source = digest.digest()
@@ -130,7 +138,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         route = unquote(urlsplit(path).path)
-        for prefix, folder in [('/web/', ROOT / 'web'), ('/d2/', ROOT / 'd2'), ('/walkthrough/', example)]:
+        for prefix, folder in [('/web/', ROOT / 'web'), ('/d2/', ROOT / 'web/d2'), ('/walkthrough/', example)]:
             if route.startswith(prefix):
                 candidate = (folder / route[len(prefix):]).resolve()
                 if candidate.is_relative_to(folder.resolve()) and candidate.is_file():
@@ -160,7 +168,7 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             refresh_diagram()
             digest = sha256()
-            for folder in [ROOT / 'web', ROOT / 'd2', example]:
+            for folder in [ROOT / 'web', example]:
                 for path in sorted(folder.rglob('*')):
                     if path.is_file() and path.suffix in {'.html', '.js', '.css', '.d2', '.svg'}:
                         digest.update(str(path).encode())
@@ -189,8 +197,11 @@ def smoke_check(base, diagram):
     expected = {'/': (ROOT / 'web/index.html').read_bytes(), content_route: (example / 'content.js').read_bytes(),
                 diagram_route: (example / unquote(diagram_route.removeprefix('/walkthrough/'))).read_bytes()}
     # Required viewer dependencies, including files whose absence must fail the check.
-    for relative in ['web/index.js', 'web/model.js', 'web/viewport.js', 'web/styles.css', 'd2/diagram.js', 'd2/connections.js']:
+    for relative in ['web/index.js', 'web/model.js', 'web/viewport.js', 'web/styles.css', 'web/d2/diagram.js', 'web/d2/connections.js', 'web/d2/geometry.js']:
         expected['/' + relative] = (ROOT / relative).read_bytes()
+    # Preserve the original public module URLs for existing viewer clients.
+    for name in ['diagram.js', 'connections.js', 'geometry.js']:
+        expected['/d2/' + name] = (ROOT / 'web/d2' / name).read_bytes()
     for route, body in expected.items():
         if read(route) != body:
             raise RuntimeError(f'Viewer check failed: incorrect response at {route}')

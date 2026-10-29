@@ -1,6 +1,6 @@
 # Run a walkthrough
 
-Resolve `<skill-directory>` to the installed folder containing SKILL.md. Commands work independently of the current working directory. The launcher uses assets/web/ and assets/d2/ from that installation.
+Resolve `<skill-directory>` to the installed folder containing SKILL.md. Commands work independently of the current working directory. The launcher uses assets/web/ (including its d2/ modules) from that installation.
 
 ## Compile and validate
 
@@ -17,6 +17,14 @@ Add `--json` for a machine-readable report (check only). Use `--help` for exampl
 Compilation writes diagram.svg beside content.js and diagram.d2. The proportion check covers standard D2 person shapes, not arbitrary icons. Overall SVG dimensions come from the root `viewBox`: when the shorter side is at least 1,000 units, the longer side must be at most five times it.
 
 These checks do not certify business accuracy, browser execution, or the absence of visual collisions. Browser review is not required.
+
+## Runtime security boundaries
+
+The launcher executes Git, Node.js, and D2 through one allowlisted helper, using argument lists, timeouts, and no shell. These processes are required for checkout discovery, validation, and diagram compilation. Only open trusted local walkthroughs: Node.js and the browser execute content.js, and D2 resolves diagram imports.
+
+Browser fetches use the viewer's origin and reject redirects. The HTTP handler confines resolved file paths to the bundled assets or selected walkthrough, including symlink targets. Serving binds to all interfaces to support remote preview environments; use it on a trusted network and stop it when finished.
+
+D2 encodes SVG group identifiers; the viewer decodes them as data to match nodes and connections. Numeric SVG text entities are also decoded as text. Neither decoder evaluates the result as code. Static scanners may flag these decoders, local HTTP requests, or process launches even though the runtime needs them. Review the actual call sites when assessing such findings.
 
 ## Diagnose dependencies
 

@@ -25,7 +25,7 @@ A collection of agents skills to make more delightful software.
     </tr>
     <tr>
       <td><a href="skills/better-codex-superfan/SKILL.md">better-codex-superfan</a></td>
-      <td><img src="assets/better-codex-superfan.gif" alt="Recurring task running with the better-codex-superfan skill" width="100%"></td>
+      <td><img src="assets/better-codex-superfan.gif" alt="Recurring task running with the better-codex-superfan skill" height="240"></td>
     </tr>
     <tr>
       <td><a href="skills/better-one-by-one/SKILL.md">better-one-by-one</a></td>
@@ -33,7 +33,7 @@ A collection of agents skills to make more delightful software.
     </tr>
     <tr>
       <td><a href="skills/better-walkthrough/SKILL.md">better-walkthrough</a></td>
-      <td><img src="assets/better-walkthrough.gif" alt="Interactive code walkthrough with branching scenarios" width="100%"></td>
+      <td><img src="assets/better-walkthrough.gif" alt="Interactive code walkthrough with branching scenarios" height="240"></td>
     </tr>
   </tbody>
 </table>

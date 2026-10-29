@@ -41,7 +41,7 @@ If D2 has several connections between the same endpoints, add `occurrence: 0` (o
 
 Existing `edges` arrays of decoded D2 connection IDs and numeric transition references remain supported. Named definitions may also use literal connection IDs for unusual D2 syntax.
 
-A step has either `next` or `choices`. Omit both for an end state. Choices have stable `id`, `label`, `summary`, `alternative`, `to`, and optional `edge`, `examples`, and `updates` fields. The viewer uses each choice `label` for both its button and its temporary preview arrow. Every choice gets a separate arrow with a hidden destination, including choices that share a route. Selecting a choice reveals its actual route. Omit `edge` only when the target step has the same `highlight`; the viewer draws a temporary self-loop only after that choice is selected. Choices that move to another node require an edge.
+A step has either `next` or `choices`. Omit both for an end state. Choices have stable `id`, `label`, `summary`, `alternative`, `to`, and optional `edge`, `examples`, and `updates` fields. The viewer uses each choice `label` for both its button and its temporary edge label. Choices that share a route use one edge with separate labels and colored markers. Destination nodes stay hidden until reached. Omit `edge` only when the target step has the same `highlight`; the viewer draws a temporary self-loop only after that choice is selected. Choices that move to another node require an edge.
 
 `alternative` completes “See what would've happened if…” at the end of a path.
 

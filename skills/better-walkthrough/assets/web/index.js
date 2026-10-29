@@ -225,7 +225,7 @@ function render() {
 function drawDiagram() {
   const step = definition();
   const colors = choiceColors(step.choices || []);
-  const previewEdges = (step.choices || []).map(choice => ({edge: choice.edge, label: choice.label.replaceAll('`', ''), color: colors.get(choice.id)}));
+  const previewEdges = orderedChoices(step.choices || []).map(choice => ({edge: choice.edge, label: choice.label.replaceAll('`', ''), color: colors.get(choice.id)}));
   const previousStep = content.steps.find(item => item.id === history.at(-2)?.stage);
   const selected = previousStep?.choices?.find(choice => choice.id === state().selectedChoice);
   const loops = selected && selected.edge === undefined

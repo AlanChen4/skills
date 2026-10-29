@@ -35,7 +35,7 @@ npx skills add AlanChen4/skills -g
     </tr>
     <tr>
       <td><a href="skills/better-one-by-one/SKILL.md">better-one-by-one</a></td>
-      <td></td>
+      <td><img src="assets/better-one-by-one.webp" alt="Working through decisions one at a time with a numbered progress tracker" height="240"></td>
     </tr>
     <tr>
       <td><a href="skills/better-walkthrough/SKILL.md">better-walkthrough</a></td>

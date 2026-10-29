@@ -17,12 +17,14 @@ let restoredScroll;
 let diagram;
 let viewport;
 let restoredZoom = 1;
+let restoredCamera;
 let showAll = false;
+let minimized = false;
 const state = () => history.at(-1);
 const definition = () => content.steps.find(step => step.id === state().stage);
 function go(transition) {
   history.push(advance(content, state(), transition));
-  render();
+  render(true);
 }
 function inline(parent, text) {
   parent.replaceChildren();
@@ -141,10 +143,12 @@ function saveProgress() {
     localStorage.setItem(storageKey, JSON.stringify({
       history,
       zoom: viewport?.zoom ?? restoredZoom,
+      camera: viewport?.camera,
       showAll,
+      minimized,
       decisions: [...decisions],
       triedChoices: [...triedChoices].map(([stage, choices]) => [stage, [...choices]]),
-      scroll: {step: $('step').scrollTop, diagramTop: $('diagram-panel').scrollTop, diagramLeft: $('diagram-panel').scrollLeft},
+      scroll: {step: $('step').scrollTop},
     }));
   } catch { /* Continue normally if browser storage is unavailable. */ }
 }
@@ -169,7 +173,10 @@ function restoreProgress() {
     for (const entry of tried) triedChoices.set(...entry);
     restoredScroll = saved.scroll;
     if (Number.isFinite(saved.zoom)) restoredZoom = saved.zoom;
+    if (saved.camera && ['x', 'y', 'zoom'].every(key => Number.isFinite(saved.camera[key])))
+      restoredCamera = saved.camera;
     showAll = saved.showAll === true;
+    minimized = saved.minimized === true;
   } catch { /* Ignore incomplete or outdated saved progress. */ }
 }
 async function watchChanges() {
@@ -201,7 +208,7 @@ function renderExploration() {
   $('explored').title = `${explored} of ${total} decision options explored`;
 }
 
-function render() {
+function render(focusActive = false) {
   const snapshot = state(), step = definition();
   inline($('title'), resolve(step.title, snapshot));
   inline($('explanation'), resolve(step.explanation, snapshot));
@@ -221,6 +228,7 @@ function render() {
   renderExploration();
   saveProgress();
   drawDiagram();
+  if (focusActive) viewport?.focus(diagram.nodeElement(step.highlight), diagram.focusLabels());
 }
 function drawDiagram() {
   const step = definition();
@@ -241,8 +249,22 @@ function choiceColors(choices) {
   const routes = [...new Set(choices.map(choice => choice.edge ?? choice.id))];
   return new Map(choices.map(choice => [choice.id, palette[routes.indexOf(choice.edge ?? choice.id) % palette.length]]));
 }
+function renderSidebar() {
+  $('sidebar').dataset.minimized = String(minimized);
+  $('minimize').textContent = minimized ? '+' : '−';
+  $('minimize').setAttribute('aria-expanded', String(!minimized));
+  const label = minimized ? 'Restore walkthrough' : 'Minimize walkthrough';
+  $('minimize').setAttribute('aria-label', label);
+  $('minimize').title = label;
+}
+$('minimize').onclick = () => {
+  minimized = !minimized;
+  renderSidebar();
+  viewport?.focus(diagram.nodeElement(definition().highlight), diagram.focusLabels());
+  saveProgress();
+};
 $('toggle-all').onclick = () => { showAll = !showAll; drawDiagram(); saveProgress(); };
-$('back').onclick = () => { if (history.length > 1) { history.pop(); render(); } };
+$('back').onclick = () => { if (history.length > 1) { history.pop(); render(true); } };
 $('restart').onclick = () => {
   if ($('restart').hidden) return;
   history = history.slice(0, 1);
@@ -250,17 +272,13 @@ $('restart').onclick = () => {
   triedChoices.clear();
   restoredScroll = null;
   $('step').scrollTop = 0;
-  $('diagram-panel').scrollTop = 0;
-  $('diagram-panel').scrollLeft = 0;
-  render();
+  render(true);
 };
 let scrollSave;
-for (const id of ['step', 'diagram-panel']) {
-  $(id).addEventListener('scroll', () => {
-    clearTimeout(scrollSave);
-    scrollSave = setTimeout(saveProgress, 100);
-  });
-}
+$('step').addEventListener('scroll', () => {
+  clearTimeout(scrollSave);
+  scrollSave = setTimeout(saveProgress, 100);
+});
 addEventListener('pagehide', saveProgress);
 try {
   $('diagram-status').textContent = 'Loading diagram…';
@@ -269,17 +287,17 @@ try {
   const errors = validate(content, diagram.ids);
   if (errors.length) throw new Error(errors.join('\n'));
   restoreProgress();
+  renderSidebar();
   $('diagram-status').textContent = '';
   viewport = attachViewport($('diagram-panel'), $('diagram').firstElementChild, {
-    out: $('zoom-out'), reset: $('zoom-reset'), into: $('zoom-in'),
-  }, restoredZoom, saveProgress);
+    out: $('zoom-out'), reset: $('zoom-reset'), into: $('zoom-in'), occlusion: $('sidebar'),
+    horizontal: $('pan-horizontal'), vertical: $('pan-vertical'),
+  }, restoredZoom, saveProgress, restoredCamera);
   $('zoom-reset').disabled = false;
   $('toggle-all').disabled = false;
-  render();
+  render(!restoredCamera);
   if (restoredScroll) {
     $('step').scrollTop = restoredScroll.step || 0;
-    $('diagram-panel').scrollTop = restoredScroll.diagramTop || 0;
-    $('diagram-panel').scrollLeft = restoredScroll.diagramLeft || 0;
     restoredScroll = null;
   }
 } catch (error) {

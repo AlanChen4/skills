@@ -46,4 +46,11 @@ Serving performs the same validation and HTTP checks before printing the viewer 
 
 For an initialized walkthrough, replace `--walkthrough <walkthrough-directory>` with `--repo <checkout> --name <workflow>`. Existing folders outside the checkout remain accessible through `--walkthrough`.
 
-The server reloads changed source and content. The bundled interface provides manual navigation, branching, exploration tracking, stable diagram positions, pan and zoom, and saved progress.
+The server reloads changed source and content. The bundled interface provides manual navigation, branching, exploration tracking, stable diagram positions, and saved progress.
+
+- The panel floats over the full-width diagram. It can be minimized or restored, and its state survives refresh.
+- Next, Back, and choices focus the active node with a 600 ms ease-out transition. Reduced-motion preferences disable animation.
+- With Toggle All off, connected edge labels move near the active node and stay within the focus view. Toggle All restores their original positions.
+- Drag to pan. Scroll over the diagram to zoom around the pointer, up to 500%. The camera transforms an outer HTML layer, keeping the SVG and its dimensions unchanged.
+- Wheel input updates on the next animation frame. Camera position saves after interaction settles and restores on refresh.
+- Native diagram scrollbars are hidden. Thin position indicators fade in during mouse dragging and fade out on release.

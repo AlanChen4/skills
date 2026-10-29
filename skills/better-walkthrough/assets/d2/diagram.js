@@ -1,4 +1,4 @@
-import {resolveConnections, bindChoiceLabels} from './connections.js';
+import {resolveConnections, bindChoiceLabels, connectionEndpoints} from './connections.js';
 
 // D2 SVG groups encode their source IDs in the first CSS class.
 export function decodeId(className) {
@@ -56,7 +56,9 @@ export async function loadDiagram(url, container, content) {
     const isNode = hasShape && !isProvider;
     if (!id || (!hasShape && !element.querySelector(':scope > path.connection'))) continue;
     const shapes = [...element.querySelectorAll(':scope > .shape > *')].map(shape => ({shape, originalStyle: shape.getAttribute('style') || ''}));
-    items.push({element, id, edgeIndex, isNode, isProvider, shapes});
+    const label = edgeIndex >= 0 ? element.querySelector('text') : null;
+    items.push({element, id, edgeIndex, isNode, isProvider, shapes, label,
+      labelTransform: label?.getAttribute('transform')});
     element.style.opacity = '0';
     element.style.pointerEvents = 'none';
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) element.style.transition = 'opacity 200ms';
@@ -71,10 +73,12 @@ export async function loadDiagram(url, container, content) {
   return {
     ids,
     content,
+    nodeElement(id) { return items.find(item => item.isNode && item.id === id)?.element; },
+    focusLabels() { return items.filter(item => item.element.hasAttribute('data-focused-label')).map(item => item.label); },
     draw(state, current, title, showAll = false, previewEdges = []) {
       svg.setAttribute('aria-label', title);
       svg.querySelectorAll('.choice-label-clearance').forEach(rect => rect.remove());
-      for (const {element, id, edgeIndex, isNode, isProvider, shapes} of items) {
+      for (const {element, id, edgeIndex, isNode, isProvider, shapes, label, labelTransform} of items) {
         const upcoming = edgeIndex >= 0 && previewEdges.some(choice => choice.edge === edgeIndex);
         const visible = showAll || upcoming || (isProvider ? state.nodes.some(node => node.startsWith(id + '.')) : isNode ? state.nodes.includes(id) : state.edges.includes(edgeIndex));
         const active = isProvider ? current.startsWith(id + '.') : isNode ? current === id : edgeIndex === state.activeEdge;
@@ -83,16 +87,37 @@ export async function loadDiagram(url, container, content) {
         element.setAttribute('aria-hidden', String(!visible));
         if (edgeIndex >= 0) {
           element.querySelector('.choice-edge-preview')?.remove();
+          element.removeAttribute('data-focused-label');
+          if (label) {
+            if (labelTransform === null) label.removeAttribute('transform');
+            else label.setAttribute('transform', labelTransform);
+          }
+          const path = element.querySelector('path.connection');
+          let box = label?.getBBox();
+          const endpoints = connectionEndpoints(id);
+          const nearCurrent = endpoints?.from === current || endpoints?.to === current;
+          if (!showAll && visible && nearCurrent && box && path) {
+            const length = path.getTotalLength();
+            const outgoing = endpoints.from === current;
+            const distance = Math.min(80, length / 3);
+            const point = path.getPointAtLength(outgoing ? distance : length - distance);
+            const toward = path.getPointAtLength(outgoing ? Math.min(length, distance + 1) : Math.max(0, length - distance - 1));
+            const horizontal = Math.abs(toward.x - point.x) > Math.abs(toward.y - point.y);
+            const x = horizontal ? (toward.x >= point.x ? point.x + 12 : point.x - box.width - 12) : point.x + 24;
+            const y = horizontal ? point.y - box.height - 12 : point.y - box.height / 2;
+            label.setAttribute('transform', `translate(${x - box.x} ${y - box.y}) ${labelTransform || ''}`);
+            box = {x, y, width: box.width, height: box.height};
+            element.setAttribute('data-focused-label', '');
+          }
+          if (box && (upcoming || element.hasAttribute('data-focused-label'))) {
+            for (const mask of edgeMasks) mask.append(svgElement('rect', {
+              class: 'choice-label-clearance', x: box.x - (upcoming ? 18 : 4), y: box.y - 4,
+              width: box.width + (upcoming ? 22 : 8), height: box.height + 8, fill: 'black',
+            }));
+          }
           if (upcoming) {
-            const label = element.querySelector('text');
-            const path = element.querySelector('path.connection');
-            const box = label?.getBBox();
             const point = box ? {x: box.x, y: box.y + box.height / 2} : path?.getPointAtLength(path.getTotalLength() / 2);
             if (point) {
-              if (box) for (const mask of edgeMasks) mask.append(svgElement('rect', {
-                class: 'choice-label-clearance', x: box.x - 18, y: box.y - 4,
-                width: box.width + 22, height: box.height + 8, fill: 'black',
-              }));
               const group = svgElement('g', {class: 'choice-edge-preview'});
               group.append(svgElement('circle', {class: 'choice-edge-marker', cx: point.x - 10, cy: point.y,
                 r: 4, fill: previewEdges.find(choice => choice.edge === edgeIndex).color, 'aria-hidden': true}));

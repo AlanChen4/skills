@@ -5,16 +5,19 @@
 <title>Walkthrough</title>
 <link rel="stylesheet" href="/web/styles.css">
 <main>
-  <div id="sidebar" class="panel">
+  <div id="sidebar" class="panel" data-minimized="false">
     <section id="step" aria-labelledby="title" aria-live="polite">
-      <h2 id="title"></h2>
+      <header class="sidebar-heading">
+        <h2 id="title"></h2>
+        <button id="minimize" aria-label="Minimize walkthrough" aria-expanded="true" aria-controls="step walkthrough-controls" title="Minimize walkthrough">−</button>
+      </header>
       <p id="explanation"></p>
       <ul id="reasons" hidden></ul>
       <div id="data"></div>
       <div id="choices" aria-live="polite"></div>
       <div id="alternatives"></div>
     </section>
-    <nav aria-label="Walkthrough controls">
+    <nav id="walkthrough-controls" aria-label="Walkthrough controls">
       <button id="restart" hidden>Restart</button>
       <button id="back" disabled>Back</button>
       <span id="explored" aria-live="polite">Explored 0%</span>
@@ -26,6 +29,8 @@
     <p id="diagram-status" role="status"></p>
     <div id="diagram"></div>
   </section>
+  <div id="pan-horizontal" class="pan-scrollbar horizontal" aria-hidden="true"><span></span></div>
+  <div id="pan-vertical" class="pan-scrollbar vertical" aria-hidden="true"><span></span></div>
   <nav id="zoom-controls" aria-label="Diagram controls">
     <button id="toggle-all" aria-pressed="false" title="Show the complete diagram" disabled>Toggle All</button>
     <button id="zoom-out" aria-label="Zoom out" disabled>−</button>

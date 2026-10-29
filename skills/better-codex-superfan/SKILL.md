@@ -1,7 +1,7 @@
 ---
 name: better-codex-superfan
 license: MIT
-description: Run a user-defined recurring task in one active Codex goal, sleeping between runs while the session supports it.
+description: Run a recurring task with codex goals, sleeping between runs. Fix for [this](https://github.com/openai/codex/issues/34946).
 ---
 
 # Better Codex Superfan

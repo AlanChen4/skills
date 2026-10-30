@@ -13,4 +13,6 @@ The CLI first writes `.better-walkthrough/.gitignore` containing `*`. This ignor
 - Each worktree has its own folder. Branches in the same worktree share it.
 - Rerunning `--init` preserves existing content and diagrams.
 
-Follow [runtime.md](runtime.md) to check and serve the walkthrough. Use `--repo <checkout> --name <workflow>` to find it again, or `--walkthrough <folder>` to open any existing folder, including older external workspaces.
+Follow [runtime.md](runtime.md) to build the standalone HTML or serve it during development. Use `--repo <checkout> --name <workflow>` to find it again, or `--walkthrough <folder>` to build any existing folder, including older external workspaces.
+
+Keep content.js and diagram.d2 as the editable sources. To extend or correct a walkthrough, edit those files and rebuild. The build replaces index.html at the same path only after validation and bundling succeed. Do not edit or merge the generated HTML. Other walkthrough folders are unaffected.

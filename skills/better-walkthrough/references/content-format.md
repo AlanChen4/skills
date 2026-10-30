@@ -1,6 +1,6 @@
 # Content format
 
-Each walkthrough supplies content.js, diagram.d2, and generated diagram.svg. The web interface handles rendering and navigation. Content modules export trusted local JavaScript; they must not execute product code or call external services. Keep credentials out of scenario data.
+Each walkthrough supplies content.js, diagram.d2, and generated diagram.svg and index.html. The web interface handles rendering and navigation. Content modules export trusted local JavaScript; they must not execute product code or call external services. Keep credentials out of scenario data.
 
 Export an object from `content.js`:
 

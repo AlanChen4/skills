@@ -29,10 +29,7 @@ export function diagramLabels(svgText) {
   }
   return labels;
 }
-export async function loadDiagram(url, container, content) {
-  const response = await fetch(url, {cache: 'no-store', mode: 'same-origin', redirect: 'error'});
-  if (!response.ok) throw new Error('Diagram loading failed');
-  const text = await response.text();
+export function renderDiagram(text, container, content) {
   const ids = diagramIds(text);
   content = bindChoiceLabels(resolveConnections(content, ids), diagramLabels(text));
   const parsed = new DOMParser().parseFromString(text, 'image/svg+xml');

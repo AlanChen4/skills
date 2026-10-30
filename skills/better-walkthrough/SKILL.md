@@ -20,8 +20,8 @@ Use [content-format.md](references/content-format.md) to write content.js and di
 
 ## Validate
 
-Follow [runtime.md](references/runtime.md) to check or serve the walkthrough. Resolve reported errors.
+Follow [runtime.md](references/runtime.md) to build a standalone walkthrough. Use the development server only for live reload. Resolve reported errors.
 
 ## Deliver
 
-Return the viewer URL and artifact directory, with validation results and material uncertainties.
+Return the generated HTML link and artifact directory (or the viewer URL when serving), with validation results and material uncertainties.

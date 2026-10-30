@@ -1,8 +1,8 @@
 # Content format
 
-Each walkthrough supplies content.js, diagram.d2, and generated diagram.svg. The web interface handles rendering and navigation. Content modules export trusted local JavaScript; they must not execute product code or call external services. Keep credentials out of scenario data.
-
-Export an object from `content.js`:
+- Write content.js and diagram.d2. The build generates diagram.svg and index.html.
+- Content modules contain trusted local JavaScript. Keep credentials out; do not run product code or call services.
+- Export a content object:
 
 ```js
 export default {
@@ -35,52 +35,66 @@ export default {
 };
 ```
 
-`highlight` is a D2 node ID. Define `edges` with readable names and fully qualified `from` and `to` node IDs. Transitions use the connection name. The browser and validator resolve these endpoints against the compiled SVG, including connections within groups. Do not construct D2's encoded or scoped connection IDs by hand.
+## Steps and connections
 
-If D2 has several connections between the same endpoints, add `occurrence: 0` (or 1, 2, and so on) to select their order in the D2 source. Ambiguous or missing connections fail with an actionable error.
+- `highlight` names a D2 node. Define named `edges` with fully qualified `from` and `to` node IDs, including groups.
+- Reference the edge name in each transition. The viewer and validator resolve endpoints against the SVG; do not construct encoded or scoped D2 IDs manually.
+- For repeated connections between the same endpoints, set `occurrence` to their zero-based source order. Missing or ambiguous connections fail validation.
+- Legacy arrays of decoded D2 connection IDs and numeric references remain supported. Named edges can also use literal connection IDs for unusual syntax.
+- A step uses `next`, `choices`, or neither for an end state.
+- Every transition needs a real D2 edge matching the current and target highlights. Same-node loops need explicit self-edges. Merge extra explanation into the existing step.
+- Keep `explanation` brief and put supporting bullets in `reasons`.
+- Backticks style inline code. Other Markdown and HTML appear as plain text.
 
-Existing `edges` arrays of decoded D2 connection IDs and numeric transition references remain supported. Named definitions may also use literal connection IDs for unusual D2 syntax.
+## Choices
 
-A step has either `next` or `choices`. Omit both for an end state. Choices have stable `id`, `summary`, `alternative`, `to`, and a required `edge`. The `label`, `examples`, and `updates` fields are optional.
-
-For choices with an `edge`, the compiled D2 edge text supplies the button label. Omit `label` to avoid duplication; an explicit label must match the edge text or validation fails. Put scenario-specific conditions in `summary` or `examples`. Choices sharing a route share its label and colored marker. The viewer keeps the original edge text before and after selection, and hides destination nodes until reached.
+- Supply stable `id`, `summary`, `alternative`, `to`, and `edge` fields. `label`, `examples`, and `updates` are optional.
+- Omit `label` to use the D2 edge text. An explicit label must match it.
+- Put scenario conditions in `summary` or `examples`.
+- Choices on one route share its label and colored marker. Edge text stays unchanged after selection; destination nodes stay hidden until reached.
+- Write `alternative` to complete “See what would've happened if…” at the end of a path.
 
 ```js
 choices: [{
   id: 'declined-card',
   edge: 'paymentFailed', // D2 edge text: Payment declined
   summary: 'The bank declined the card.',
+  alternative: 'the bank had declined the card',
   to: 'payment-error',
 }]
 ```
 
-Every choice requires a real D2 edge whose endpoints match the current and target highlights. A loop must reference an explicit self-edge in diagram.d2. Every transition, including `next`, requires a real edge matching its current and target highlights. Merge extra explanation into an existing step instead of creating a text-only transition.
+## State and navigation
 
-`alternative` completes “See what would've happened if…” at the end of a path.
+- `title`, `explanation`, `examples`, `reasons`, choice `summary`, and transition `updates` accept values or pure functions of state.
+- Functions belong on these outer fields and `when`. Nested example values must be plain data.
+- Return changed state fields from `updates`. Do not mutate history.
+- For conditional navigation, use a `next` array with `when: state => condition`. The first match wins; put an unconditional fallback last.
+- Keep targets explicit so validation can inspect them without running business logic.
 
-`title`, `explanation`, `examples`, `reasons`, choice `summary`, and transition `updates` can be literal values or functions of the current state. Functions are supported only on these outer fields (and `when`), not inside example objects. Keep these functions pure. Return new state fields from `updates`; do not mutate history or call external services.
+## Examples
 
-For conditional navigation, `next` can be an array of transitions with `when: state => condition`. The first matching transition wins. Put an unconditional fallback last. Keep every target explicit so validation can inspect it without executing business logic.
-
-Keep `explanation` brief. Put supporting points in `reasons`, which the interface renders as a bullet list, rather than joining them into a long paragraph.
-
-Wrap code references in backticks (e.g. `check_stock`) for inline code styling in narrative text. Other Markdown and HTML are rendered as plain text.
-
-Examples support `data` for JSON, `facts` for a two-column field/value table, `text`, and `paragraphs`. Use `facts` for flat values (e.g. `facts: {Target: 'r/catmakers', Schedule: '0 8 * * *'}`) and `data` for nested payloads or responses. Keep text short. Add `disclosure` to put content inside a native expandable section. The interface supplies gray containers.
-
-For state-dependent examples, return the whole array:
+- Use `data` for JSON payloads and `facts` for a flat field/value table.
+- Use `text` for short text or `paragraphs` for an array of text. Add `disclosure` for an expandable section.
+- `data` must be JSON-compatible. `facts` values must be text, finite numbers, booleans, or null.
+- For state-dependent examples, return the entire array:
 
 ```js
 examples: state => [{data: {account: state.account}}]
 ```
 
-Do not use `examples: [{data: state => ...}]` or function-valued `facts`. Resolved examples contain plain values: `data` must be JSON-compatible; `facts` must be a flat object of text, finite numbers, booleans, or null; `paragraphs` must be an array of text. Static validation checks literal content without evaluating functions, so it cannot verify what a state-dependent function returns.
+- Do not put functions inside `data` or `facts`.
+- Static validation checks literal examples without evaluating functions. It cannot verify function results.
 
-Use a unique walkthrough `id`. Saved progress uses that ID unless `storageKey` is supplied. Keep IDs, storage keys, and connection order unchanged when moving files to preserve progress at the same viewer origin. Change the storage key when state changes are incompatible.
+## Saved progress
+
+- Use a unique walkthrough `id`; it supplies the default storage key unless `storageKey` is set.
+- Keep IDs, storage keys, and connection order stable when moving files to preserve progress at the same viewer origin.
+- Change `storageKey` when state changes are incompatible.
 
 ## Source references
 
-Store repository-relative paths in a `sources` field, for example:
+Store repository-relative paths in `sources` on the content object or individual steps:
 
 ```js
 sources: {
@@ -89,4 +103,4 @@ sources: {
 }
 ```
 
-Steps may also carry `sources` metadata for their specific implementation. This metadata supports source inspection; structural validation does not verify it against the product code.
+Structural validation does not check these references against product code.

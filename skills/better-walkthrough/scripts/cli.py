@@ -1,4 +1,4 @@
-"""Compile, validate, or serve a walkthrough folder with the bundled web interface."""
+"""Build, validate, or serve a walkthrough folder with the bundled web interface."""
 import argparse
 from hashlib import sha256
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -71,7 +71,9 @@ SETUP = """Install the dependencies, then rerun --doctor:
 - Python 3.9 or newer: https://www.python.org/downloads/
 - A current Node.js LTS release: https://nodejs.org/en/download
 - D2 0.9.0 or newer, including bundled TALA: https://d2lang.com/tour/install/
-Put node and d2 on PATH. No npm or pip packages are required.
+Put node and d2 on PATH. For standalone builds, install the bundled npm dependencies:
+  npm ci --prefix <skill-directory>
+No pip packages are required. Opening the generated HTML requires only a browser.
 Walkthroughs always use TALA with downward flow. No layout selection is needed.
 """
 
@@ -197,7 +199,7 @@ def smoke_check(base, diagram):
     expected = {'/': (ROOT / 'web/index.html').read_bytes(), content_route: (example / 'content.js').read_bytes(),
                 diagram_route: (example / unquote(diagram_route.removeprefix('/walkthrough/'))).read_bytes()}
     # Required viewer dependencies, including files whose absence must fail the check.
-    for relative in ['web/index.js', 'web/model.js', 'web/viewport.js', 'web/styles.css', 'web/d2/diagram.js', 'web/d2/connections.js', 'web/d2/geometry.js']:
+    for relative in ['web/dev.js', 'web/index.js', 'web/model.js', 'web/viewport.js', 'web/styles.css', 'web/d2/diagram.js', 'web/d2/connections.js', 'web/d2/geometry.js']:
         expected['/' + relative] = (ROOT / relative).read_bytes()
     # Preserve the original public module URLs for existing viewer clients.
     for name in ['diagram.js', 'connections.js', 'geometry.js']:
@@ -218,14 +220,18 @@ def main(argv=None):
   python3 %(prog)s --init --repo /path/to/repo --name onboarding
   python3 %(prog)s --walkthrough /path/to/walkthrough --check
   python3 %(prog)s --walkthrough /path/to/walkthrough --check --json
-  python3 %(prog)s --walkthrough /path/to/walkthrough --port 0
+  python3 %(prog)s --walkthrough /path/to/walkthrough --build
+  python3 %(prog)s --walkthrough /path/to/walkthrough --serve --port 0
 
 Exit codes: 0 success; 1 check or runtime failure; 2 invalid arguments.
 --check compiles, validates, and checks HTTP routes using a temporary local server.
-Serving performs the same checks before printing the viewer URL. Use port 0 to
-select an available port automatically. No additional validator or HTTP calls are needed.''')
+The default action is --build: compile, validate, and atomically replace index.html.
+--serve runs the development server with live reload after checking HTTP routes.
+Use port 0 to select an available port automatically.''')
     parser.add_argument('--walkthrough', type=Path, help='Folder containing content.js and diagram.d2')
     parser.add_argument('--port', type=int, default=8765, help='Viewer port; 0 selects an available port (default: 8765)')
+    parser.add_argument('--build', action='store_true', help='Build standalone index.html and exit (default action)')
+    parser.add_argument('--serve', action='store_true', help='Run the development server with live reload')
     parser.add_argument('--check', action='store_true', help='Compile, validate, smoke-check HTTP routes, then exit')
     parser.add_argument('--json', action='store_true', help='Print a machine-readable report (requires --check)')
     parser.add_argument('--doctor', action='store_true', help='Check dependencies and optionally compile a walkthrough without changing its files')
@@ -238,8 +244,8 @@ select an available port automatically. No additional validator or HTTP calls ar
         parser.error('--port must be between 0 and 65535. Example: --walkthrough /path/to/walkthrough --port 0')
     if args.json and (not args.check or args.init or args.doctor or args.setup):
         parser.error('--json requires --check. Example: --walkthrough /path/to/walkthrough --check --json')
-    if sum([args.init, args.check, args.doctor, args.setup]) > 1:
-        parser.error('Choose one action: --init, --check, --doctor, or --setup. Example: --walkthrough /path/to/walkthrough --check')
+    if sum([args.init, args.check, args.build, args.serve, args.doctor, args.setup]) > 1:
+        parser.error('Choose one action: --init, --build, --serve, --check, --doctor, or --setup. Example: --walkthrough /path/to/walkthrough --check')
     if args.init:
         if not args.repo or not args.name or args.walkthrough or args.check or args.doctor or args.setup:
             parser.error('--init requires --repo and --name, without --walkthrough, --check, --doctor, or --setup')
@@ -286,6 +292,18 @@ select an available port automatically. No additional validator or HTTP calls ar
     try:
         refresh_diagram()
         report = json.loads(run_checked(['node', str(ROOT / 'web/validate.js'), str(example / 'content.js'), '--json']))
+        if not args.check and not args.serve:
+            diagram_url = urlsplit(report['diagram'])
+            diagram_path = (example / unquote(diagram_url.path)).resolve()
+            if diagram_url.scheme or diagram_url.netloc or not diagram_path.is_relative_to(example):
+                raise RuntimeError('The diagram must be a local file inside the walkthrough folder.')
+            if not (ROOT.parent / 'node_modules/esbuild').is_dir():
+                raise RuntimeError(f'Build dependency missing. Run: npm ci --prefix {ROOT.parent}')
+            output = example / 'index.html'
+            run_checked(['node', str(ROOT.parent / 'scripts/build.mjs'),
+                         str(example / 'content.js'), str(diagram_path), str(output)])
+            print(f"Validated: {report['steps']} steps, {report['connections']} connections.\nWalkthrough: {output.as_uri()}\nArtifacts: {example}")
+            return
         server = ThreadingHTTPServer(('127.0.0.1' if args.check else '0.0.0.0', 0 if args.check else args.port), Handler)
     except (OSError, RuntimeError) as error:
         parser.exit(1, f'{error}\nCheck the diagram and content. Run --doctor --walkthrough <folder> to check TALA support.\n')

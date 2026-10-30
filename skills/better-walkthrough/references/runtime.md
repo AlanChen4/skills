@@ -1,78 +1,74 @@
 # Run a walkthrough
 
-Resolve `<skill-directory>` to the installed folder containing SKILL.md. Commands work independently of the current working directory. The launcher uses assets/web/ (including its d2/ modules) from that installation.
+- Set `<skill-directory>` to the installed folder containing SKILL.md.
+- Commands work from any directory and use the installation's assets/web/ files.
+- Use `--walkthrough <folder>` or `--repo <checkout> --name <workflow>` to select a walkthrough.
 
-## Build a standalone walkthrough (default)
-
-Write the [content and diagram source](content-format.md) in a [local walkthrough folder](workspaces.md), then run:
-
-```sh
-python3 <skill-directory>/scripts/cli.py --walkthrough <walkthrough-directory> --build
-```
-
-Omitting the action also builds. The command compiles D2, validates the content and diagram, and bundles the shared viewer, CSS, JavaScript content (including functions), and SVG into index.html. It exits without starting a server. Return the artifact directory and end the final response with a clickable link to the generated index.html file, using its absolute path. Open the file directly in a browser; viewing requires no installed tools or network access.
-
-Install the build dependency once with `npm ci --prefix <skill-directory>` if needed. Python, Node.js, and D2 are needed to build; esbuild is needed only for bundling. Build dependencies stay inside the skill installation.
-
-For later edits or additions, change content.js and diagram.d2 and rerun the build. It regenerates the complete HTML and atomically replaces the previous index.html after success. A failed validation or bundle leaves the previous HTML intact. Refresh an already-open file to see the replacement. Saved progress is restored when compatible; change the content's storageKey to reset it after changes that alter scenario meaning. Browser storage for local files may vary; navigation still works if storage is unavailable.
-
-## Compile and validate
-
-Create a [local walkthrough folder](workspaces.md) and write its [content and diagram source](content-format.md), then run:
+## Build standalone HTML
 
 ```sh
-python3 <skill-directory>/scripts/cli.py --walkthrough <walkthrough-directory> --check
+python3 <skill-directory>/scripts/cli.py --walkthrough <folder> --build
 ```
 
-This command checks dependencies, compiles D2, validates navigation and diagram references, checks person-shape proportions and overall diagram proportions, and checks viewer HTTP routes. Its temporary local server stops before the command exits.
+- Build is the default action. It compiles D2, validates content and diagram references, and bundles the viewer, CSS, content functions, and SVG into index.html.
+- The command exits without starting a server. Open index.html directly in a browser; viewing needs no tools or network access.
+- Edit content.js and diagram.d2, then rebuild. The build atomically replaces index.html at the same path after success. Failed validation or bundling preserves the previous HTML.
+- Refresh an open file after rebuilding. For incompatible scenario changes, change `storageKey` as described in [content-format.md](content-format.md).
+- Local-file storage varies by browser. Navigation works when storage is unavailable.
+- Follow the delivery rules in [SKILL.md](../SKILL.md), including after development serving.
 
-Add `--json` for a machine-readable report (check only). Use `--help` for examples and exit codes.
+## Dependencies
 
-Compilation writes diagram.svg beside content.js and diagram.d2. The proportion check covers standard D2 person shapes, not arbitrary icons. Overall SVG dimensions come from the root `viewBox`: when the shorter side is at least 1,000 units, the longer side must be at most five times it.
+- Python 3.9 or newer, a current Node.js LTS release, and D2 0.9.0 or newer with bundled TALA.
+- Put node and d2 on PATH. No pip packages are required.
+- Install esbuild once for standalone builds: `npm ci --prefix <skill-directory>`. Serving and validation do not need it.
+- Compilation always uses TALA and downward flow, overriding source and environment settings. Text uses 24px regular type; bold and italic are disabled before layout.
 
-These checks do not certify business accuracy, browser execution, or the absence of visual collisions. Browser review is not required.
-
-## Runtime security boundaries
-
-The launcher executes Git, Node.js, and D2 through one allowlisted helper, using argument lists, timeouts, and no shell. These processes are required for checkout discovery, validation, and diagram compilation. Only open trusted local walkthroughs: Node.js and the browser execute content.js, and D2 resolves diagram imports.
-
-Development browser fetches use the viewer's origin and reject redirects. The HTTP handler confines resolved file paths to the bundled assets or selected walkthrough, including symlink targets. Serving binds to all interfaces to support remote preview environments; use it on a trusted network and stop it when finished.
-
-D2 encodes SVG group identifiers; the viewer decodes them as data to match nodes and connections. Numeric SVG text entities are also decoded as text. Neither decoder evaluates the result as code. Static scanners may flag these decoders, local HTTP requests, or process launches even though the runtime needs them. Review the actual call sites when assessing such findings.
-
-## Diagnose dependencies
-
-Use Python 3.9 or newer, a current Node.js LTS release, and D2 0.9.0 or newer with bundled TALA. No pip packages are required. Standalone builds also need the skill's npm dependency; serving and validation do not. The CLI always compiles with TALA and downward flow, overriding layout settings in the source or environment. There is no layout parameter. All diagram text uses 24px regular type, with bold and italic disabled before layout.
+When dependencies fail:
 
 ```sh
 python3 <skill-directory>/scripts/cli.py --doctor
 ```
 
-Use this diagnostic when dependencies fail; it is not required before `--check`. It probes the required Node.js features and compiles a temporary diagram with TALA. To check an existing diagram without changing its files, add `--walkthrough <walkthrough-directory>`.
+- This probes Node.js features and compiles a temporary diagram with TALA.
+- Add `--walkthrough <folder>` to check an existing diagram without changing its files.
+- Use `--setup` to print installation guidance without installing software.
 
-If a dependency is missing, print setup instructions:
+## Compile and validate
 
 ```sh
-python3 <skill-directory>/scripts/cli.py --setup
+python3 <skill-directory>/scripts/cli.py --walkthrough <folder> --check
 ```
 
-This prints installation guidance without installing software.
+- Checks dependencies, navigation, diagram references, person proportions, overall proportions, and viewer HTTP routes.
+- Writes diagram.svg beside the sources. Its temporary server stops before exit.
+- Add `--json` for a machine-readable report. Use `--help` for examples and exit codes.
+- Person checks cover standard D2 person shapes. For a root SVG `viewBox` with a shorter side of at least 1,000 units, the longer side must be at most five times it.
+- Checks do not establish business accuracy, browser execution, or freedom from visual collisions. Browser review is optional.
 
 ## Serve during development
 
 ```sh
-python3 <skill-directory>/scripts/cli.py --walkthrough <walkthrough-directory> --serve --port 8765
+python3 <skill-directory>/scripts/cli.py --walkthrough <folder> --serve --port 8765
 ```
 
-Serving performs the same validation and HTTP checks before printing the viewer URL, content URL, SVG URL, reload URL, and artifact directory. A separate `--check` immediately before serving is unnecessary if nothing changed. When live reload is requested, include the printed viewer URL and artifact directory. Serving does not rebuild the standalone HTML; always run --build after the final source edits and end the final response with the standalone file link. Use `--port 0` to choose an available port automatically and preserve existing viewers. Use Ctrl+C to stop the server.
+- Serving validates and checks HTTP routes before printing the viewer, content, SVG, and reload URLs and artifact directory. A separate `--check` is unnecessary when files are unchanged.
+- Source edits reload the viewer. Serving does not rebuild index.html; run `--build` after the final edits.
+- Use `--port 0` to choose an available port and preserve existing viewers. Stop with Ctrl+C.
 
-For an initialized walkthrough, replace `--walkthrough <walkthrough-directory>` with `--repo <checkout> --name <workflow>`. Existing folders outside the checkout remain accessible through `--walkthrough`.
+## Viewer controls
 
-The server reloads changed source and content. The bundled interface provides manual navigation, branching, exploration tracking, stable diagram positions, and saved progress.
+- Next, Back, and choices focus the active node. The 600 ms ease-out animation respects reduced-motion preferences.
+- Minimize or restore the floating panel. Its state survives refresh.
+- Toggle All restores original edge-label positions. With it off, connected labels stay near the active node.
+- Drag to pan; scroll to zoom around the pointer, up to 500%. Camera changes apply to an outer HTML layer and preserve SVG dimensions.
+- Wheel updates run on the next animation frame. Camera position saves after interaction settles and restores on refresh.
+- Scrollbars stay hidden. Position indicators appear during dragging and fade on release.
 
-- The panel floats over the full-width diagram. It can be minimized or restored, and its state survives refresh.
-- Next, Back, and choices focus the active node with a 600 ms ease-out transition. Reduced-motion preferences disable animation.
-- With Toggle All off, connected edge labels move near the active node and stay within the focus view. Toggle All restores their original positions.
-- Drag to pan. Scroll over the diagram to zoom around the pointer, up to 500%. The camera transforms an outer HTML layer, keeping the SVG and its dimensions unchanged.
-- Wheel input updates on the next animation frame. Camera position saves after interaction settles and restores on refresh.
-- Native diagram scrollbars are hidden. Thin position indicators fade in during mouse dragging and fade out on release.
+## Runtime boundaries
+
+- Open trusted local walkthroughs only. Node.js and the browser execute content.js; D2 resolves imports.
+- The launcher runs Git, Node.js, and D2 through an allowlisted helper with argument lists, timeouts, and no shell.
+- Development fetches stay on the viewer origin and reject redirects. The HTTP handler confines files and symlink targets to the assets or selected walkthrough.
+- Serving binds to all interfaces for remote previews. Use a trusted network and stop it when finished.
+- SVG identifier and numeric-text decoders treat their results as data. If scanners flag decoders, local requests, or process launches, inspect their call sites.

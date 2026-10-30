@@ -10,7 +10,7 @@ Write the [content and diagram source](content-format.md) in a [local walkthroug
 python3 <skill-directory>/scripts/cli.py --walkthrough <walkthrough-directory> --build
 ```
 
-Omitting the action also builds. The command compiles D2, validates the content and diagram, and bundles the shared viewer, CSS, JavaScript content (including functions), and SVG into index.html. It exits without starting a server. Return a clickable link to that HTML file and the artifact directory. Open the file directly in a browser; viewing requires no installed tools or network access.
+Omitting the action also builds. The command compiles D2, validates the content and diagram, and bundles the shared viewer, CSS, JavaScript content (including functions), and SVG into index.html. It exits without starting a server. Return the artifact directory and end the final response with a clickable link to the generated index.html file, using its absolute path. Open the file directly in a browser; viewing requires no installed tools or network access.
 
 Install the build dependency once with `npm ci --prefix <skill-directory>` if needed. Python, Node.js, and D2 are needed to build; esbuild is needed only for bundling. Build dependencies stay inside the skill installation.
 
@@ -64,7 +64,7 @@ This prints installation guidance without installing software.
 python3 <skill-directory>/scripts/cli.py --walkthrough <walkthrough-directory> --serve --port 8765
 ```
 
-Serving performs the same validation and HTTP checks before printing the viewer URL, content URL, SVG URL, reload URL, and artifact directory. A separate `--check` immediately before serving is unnecessary if nothing changed. When live reload is requested, return the printed viewer URL and artifact directory. Serving does not rebuild the standalone HTML; run --build when ready to deliver it. Use `--port 0` to choose an available port automatically and preserve existing viewers. Use Ctrl+C to stop the server.
+Serving performs the same validation and HTTP checks before printing the viewer URL, content URL, SVG URL, reload URL, and artifact directory. A separate `--check` immediately before serving is unnecessary if nothing changed. When live reload is requested, include the printed viewer URL and artifact directory. Serving does not rebuild the standalone HTML; always run --build after the final source edits and end the final response with the standalone file link. Use `--port 0` to choose an available port automatically and preserve existing viewers. Use Ctrl+C to stop the server.
 
 For an initialized walkthrough, replace `--walkthrough <walkthrough-directory>` with `--repo <checkout> --name <workflow>`. Existing folders outside the checkout remain accessible through `--walkthrough`.
 

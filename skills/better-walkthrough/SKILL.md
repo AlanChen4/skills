@@ -24,4 +24,4 @@ Follow [runtime.md](references/runtime.md) to build a standalone walkthrough. Us
 
 ## Deliver
 
-Return the generated HTML link and artifact directory (or the viewer URL when serving), with validation results and material uncertainties.
+Always build the standalone HTML before delivery, including when using the development server. Return the artifact directory, validation results, and material uncertainties. Include the viewer URL when serving. End the final response with a clickable link to the generated index.html file, using its absolute path.

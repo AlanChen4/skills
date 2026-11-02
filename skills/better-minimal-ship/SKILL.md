@@ -31,6 +31,8 @@ Use the evidence to present a concise scope proposal that states:
 
 - The resulting behavior, affected surfaces, and exclusions.
 - The smallest complete approach, simpler alternatives, maintenance costs, and meaningful tradeoffs.
+- Suggest existing solutions we could reuse or adapt to reduce the changes. Name concrete candidates and explain what work they would eliminate and any added costs or dependencies.
+- Suggest constraints we could relax to make the change substantially smaller. State the constraint, the behavior or capability we would give up, and the work we would avoid. Obtain agreement before changing the constraint.
 - The specific files and folders to reuse or change, with their purpose.
 - Any planned database changes, including affected tables, columns, and migrations. State when none are needed; flag details still to confirm.
 - How to verify the result.

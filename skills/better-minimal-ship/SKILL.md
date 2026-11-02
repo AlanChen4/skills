@@ -10,12 +10,27 @@ Deliver the requested behavior with the fewest necessary changes across code, da
 
 Use `better-clear-language` for written output when available. Otherwise, use clear, simple ASD-STE100 style English. Continue without installing the skill if it is unavailable.
 
+## Coordinate subagents
+
+- Keep the parent focused on requirements, decisions, integration, and delivery. Delegate bounded exploration, implementation, testing, or review when each agent has a distinct job.
+- Start subagents with fresh context. Supply the relevant goal, agreed scope, exclusions, decisions, evidence, file references, rules, permissions, and expected result. Do not copy the full conversation.
+- Choose a suitable model and reasoning effort for each assignment. Astra requires explicit user approval. Otherwise, stay at or below the parent's cost tier; use current documented costs and ask before using a higher or unknown cost tier.
+- Parallelize independent reading. Give editing agents separate ownership and coordinate shared changes. Apply these rules to further delegation.
+- Request concise conclusions, source references, validation results, and unresolved questions. Keep raw logs out of the main conversation.
+- Inspect and integrate agent results. Agent recommendations cannot authorize scope changes or external actions.
+
+## Gather evidence
+
+- Read relevant code, repository rules, and domain docs. Keep discovery read-only.
+- Consult existing records, customer questions, error logs, or usage data when they answer a specific design question. Do not add tracking or collect new data without an explicit requirement.
+- Present useful findings with sources, sample limits, and uncertainty. Separate facts from assumptions and explain how findings affect scope.
+
 ## Align before implementation
 
-Read the relevant code and repository rules. Gather evidence for a concise scope proposal that states:
+Use the evidence to present a concise scope proposal that states:
 
 - The resulting behavior, affected surfaces, and exclusions.
-- The smallest complete approach and meaningful tradeoffs.
+- The smallest complete approach, simpler alternatives, maintenance costs, and meaningful tradeoffs.
 - The specific files and folders to reuse or change, with their purpose.
 - Any planned database changes, including affected tables, columns, and migrations. State when none are needed; flag details still to confirm.
 - How to verify the result.
@@ -23,6 +38,7 @@ Read the relevant code and repository rules. Gather evidence for a concise scope
 Before implementation:
 
 - Require explicit scope agreement. Existing agreement in this conversation counts when it covers the proposed work; do not ask again for the same decision.
+- Include only requested features. If additional behavior appears necessary, explain why and obtain agreement before including it.
 - Continue useful read-only investigation while waiting. Silence and elapsed time do not count as agreement.
 - Obtain new agreement for material changes to behavior, scope, access, or agreed tradeoffs. Resolve routine implementation details within scope without another approval step.
 
@@ -40,23 +56,32 @@ Before implementation:
 - Run checks appropriate to the change and repository rules. Test observable outcomes and plausible regressions.
 - Reuse existing coverage. Add tests for meaningful behavior; avoid tests that only mirror the implementation.
 - Exercise changed user flows and confirm resulting data or side effects. Screenshots alone do not prove success.
+- Test user flows in a browser. Check desktop and mobile when layout or interaction can differ.
 - Use development fixtures for tests that change data or send messages. Follow existing authorization for external actions; scope agreement alone does not authorize production outreach, publication, or deployment.
 - Report failures, skipped checks, and verification limits. Do not call a change verified while required checks remain unresolved.
 
 ## Review for removal
 
-Review the final diff against the agreed outcome. Identify the current requirement each addition serves. Remove unnecessary code and task artifacts:
+Give a fresh reviewer the agreed requirements and final diff. Ask which current requirement each addition serves. Have the parent assess the findings and remove unnecessary code and task artifacts:
 
 - Unrequested behavior or speculative handling.
 - Duplicate state, validation, storage, or functionality.
-- Abandoned paths, debug code, and unused fixtures.
+- Compatibility code for changes that have not shipped.
+- Abandoned behavior in APIs, schemas, tests, or admin screens.
+- Temporary scripts, debug code, unused fixtures, and development artifacts.
 - Redundant tests and unrelated edits.
 
-Preserve user-owned work and useful tools. Recheck behavior after removals. Stop simplifying when further removal would weaken correctness, clarity, or required behavior.
+- Review changed tests under repository testing rules. Identify each test's plausible regression, observable consequence, and overlap with existing coverage.
+- When removing redundant caller tests, preserve distinct policies, side effects, and setup required by the implementation.
+- Remove unnecessary code across every affected layer. Preserve access controls, private-field restrictions, data integrity, and safeguards against duplicate consequential actions.
+- Preserve user-owned work, deliberately retained artifacts, and reusable tools. Recheck behavior after removals.
+- Stop simplifying when further removal would weaken correctness, clarity, or required behavior.
 
 ## Finish and give useful heads-ups
 
 - Complete the requested delivery step. Create or update a PR when requested, following repository conventions. Match its title and description to the final implementation.
+- Address review findings and complete required checks and browser evidence. Do not bypass check gates or report skipped checks as passed.
+- In a PR, include the outcome, relevant evidence, verification results, tradeoffs, and rollout requirements. Report blockers and missing checks plainly.
 - Merge, publish, or deploy only when authorized.
 - Report what changed, verification results, and material limitations. Link the result when available.
 - Give concise heads-ups about useful observations, such as an adjacent bug, confusing instruction, slow check, tool failure, or rollout requirement.

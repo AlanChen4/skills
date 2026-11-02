@@ -6,6 +6,8 @@ description: Ship features and code changes with the smallest complete implement
 
 # Better minimal ship
 
+Use `better-clear-language` for all written output when that skill is available. Otherwise, use clear, simple ASD-STE100 style English. Do not stop or install anything if the skill is unavailable.
+
 Deliver the requested behavior with the fewest necessary changes across code, data, dependencies, and operations. Minimize total complexity, not just line count. A short patch that leaves broken behavior or shifts avoidable work to users is not complete.
 
 ## Align before implementation

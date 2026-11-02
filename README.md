@@ -35,6 +35,10 @@ npx skills add AlanChen4/skills -g
       <td><img src="assets/better-codex-superfan.gif" alt="Recurring task running with the better-codex-superfan skill" height="240"></td>
     </tr>
     <tr>
+      <td><a href="skills/better-minimal-ship/SKILL.md">better-minimal-ship</a></td>
+      <td><a href="assets/better-minimal-ship.webp"><img src="assets/better-minimal-ship.webp" alt="Scope proposal with options to reuse existing solutions and reduce changes" height="240"></a></td>
+    </tr>
+    <tr>
       <td><a href="skills/better-one-by-one/SKILL.md">better-one-by-one</a></td>
       <td><img src="assets/better-one-by-one.webp" alt="Working through decisions one at a time with a numbered progress tracker" height="240"></td>
     </tr>

@@ -1,7 +1,7 @@
 ---
 name: better-minimal-ship
 license: MIT
-description: Ship features and code changes with the smallest complete implementation, required scope alignment, focused verification, and useful heads-ups.
+description: Ship code with minimal changes and agreed scope.
 ---
 
 # Better minimal ship

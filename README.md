@@ -6,7 +6,7 @@ A collection of agents skills to make more delightful software.
 
 - [**better-clear-language**](skills/better-clear-language/SKILL.md): Write in clear, simple ([ASD-STE100 style](https://en.wikipedia.org/wiki/Simplified_Technical_English)) english.
 - [**better-codex-superfan**](skills/better-codex-superfan/SKILL.md): Run a recurring task with codex goals, sleeping between runs. Workaround for [this](https://github.com/openai/codex/issues/34946).
-- [**better-minimal-ship**](skills/better-minimal-ship/SKILL.md): Ship features and code changes with the smallest complete implementation, required scope alignment, focused verification, and useful heads-ups.
+- [**better-minimal-ship**](skills/better-minimal-ship/SKILL.md): Ship code with minimal changes and agreed scope.
 - [**better-one-by-one**](skills/better-one-by-one/SKILL.md): Work through mentioned issues/tasks one by one, with progress tracker.
 - [**better-walkthrough**](skills/better-walkthrough/SKILL.md): Use [D2 diagrams](https://d2lang.com/) to walk through code logic step-by-step.
 
